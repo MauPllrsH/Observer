@@ -50,93 +50,125 @@ const AttackTimeline = () => {
     );
 
     const maxAttacks = Math.max(...timelineData.map(d => d.attacks)) || 1;
+    const graphHeight = 200;
+    const graphWidth = '100%';
+
+    // Create points for the SVG path
+    const points = timelineData.map((entry, index) => {
+        const x = (index / (timelineData.length - 1)) * 100;
+        const y = 100 - ((entry.attacks / maxAttacks) * 100);
+        return `${x},${y}`;
+    }).join(' ');
 
     return (
         <div className="logs-container">
             <h2>Attack Timeline (Last 24 Hours)</h2>
             <div className="log-entry">
-                <div style={{
-                    height: '300px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '1rem',
-                    padding: '1rem'
-                }}>
+                <div style={{ padding: '1rem' }}>
                     <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '0.5rem',
-                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
-                        borderRadius: '4px'
+                        marginBottom: '1rem'
                     }}>
-                        <span>Peak Attacks: {maxAttacks}</span>
-                        <span>Total Points: {timelineData.length}</span>
+                        <span style={{ color: '#666' }}>Peak Attacks: {maxAttacks}</span>
+                        <span style={{ color: '#666' }}>Data Points: {timelineData.length}</span>
                     </div>
 
                     <div style={{
-                        flex: 1,
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                        gap: '2px',
-                        padding: '20px 0',
                         position: 'relative',
+                        height: `${graphHeight}px`,
                         backgroundColor: 'rgba(0, 0, 0, 0.02)',
-                        borderRadius: '4px'
+                        borderRadius: '4px',
+                        padding: '1rem'
                     }}>
-                        {timelineData.map((entry, index) => (
-                            <div
-                                key={index}
-                                style={{
-                                    flex: 1,
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    height: '100%',
-                                    position: 'relative'
-                                }}
-                            >
-                                <div style={{
-                                    width: '100%',
-                                    height: `${(entry.attacks / maxAttacks) * 100}%`,
-                                    backgroundColor: entry.attacks > 0 ? 'rgba(255, 77, 79, 0.6)' : 'rgba(0, 0, 0, 0.1)',
-                                    transition: 'height 0.3s ease',
-                                    position: 'relative',
-                                    cursor: 'pointer'
-                                }}
-                                     title={`Time: ${entry.formattedTime}
-Attacks: ${entry.attacks}
-Total Requests: ${entry.total_requests}`}
-                                />
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '-25px',
-                                    fontSize: '0.7rem',
-                                    transform: 'rotate(-45deg)',
-                                    transformOrigin: 'top left',
-                                    whiteSpace: 'nowrap',
-                                    color: '#666'
-                                }}>
-                                    {entry.formattedTime}
-                                </div>
-                            </div>
-                        ))}
+                        <svg
+                            width="100%"
+                            height="100%"
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                            style={{
+                                position: 'absolute',
+                                left: 0,
+                                top: 0,
+                                padding: '1rem'
+                            }}
+                        >
+                            {/* Grid lines */}
+                            <line x1="0" y1="25" x2="100" y2="25" stroke="#ddd" strokeWidth="0.2" />
+                            <line x1="0" y1="50" x2="100" y2="50" stroke="#ddd" strokeWidth="0.2" />
+                            <line x1="0" y1="75" x2="100" y2="75" stroke="#ddd" strokeWidth="0.2" />
 
-                        {/* Y-axis markers */}
+                            {/* Attack line */}
+                            <polyline
+                                points={points}
+                                fill="none"
+                                stroke="rgba(255, 77, 79, 0.8)"
+                                strokeWidth="1"
+                            />
+
+                            {/* Data points */}
+                            {timelineData.map((entry, index) => {
+                                const x = (index / (timelineData.length - 1)) * 100;
+                                const y = 100 - ((entry.attacks / maxAttacks) * 100);
+                                return (
+                                    <circle
+                                        key={index}
+                                        cx={x}
+                                        cy={y}
+                                        r="1.5"
+                                        fill="rgba(255, 77, 79, 0.8)"
+                                    >
+                                        <title>{`Time: ${entry.formattedTime}
+Attacks: ${entry.attacks}
+Total Requests: ${entry.total_requests}`}</title>
+                                    </circle>
+                                );
+                            })}
+                        </svg>
+
+                        {/* Y-axis labels */}
                         <div style={{
                             position: 'absolute',
-                            left: '-40px',
+                            left: '-30px',
                             top: 0,
                             height: '100%',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'space-between',
                             color: '#666',
-                            fontSize: '0.8rem'
+                            fontSize: '0.8rem',
+                            padding: '0.5rem 0'
                         }}>
                             <span>{maxAttacks}</span>
-                            <span>{Math.floor(maxAttacks / 2)}</span>
+                            <span>{Math.floor(maxAttacks * 0.75)}</span>
+                            <span>{Math.floor(maxAttacks * 0.5)}</span>
+                            <span>{Math.floor(maxAttacks * 0.25)}</span>
                             <span>0</span>
+                        </div>
+
+                        {/* X-axis labels */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: '-25px',
+                            left: 0,
+                            right: 0,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            color: '#666',
+                            fontSize: '0.8rem',
+                            padding: '0 1rem'
+                        }}>
+                            {timelineData.map((entry, index) => (
+                                index % Math.ceil(timelineData.length / 5) === 0 && (
+                                    <span key={index} style={{
+                                        transform: 'rotate(-45deg)',
+                                        transformOrigin: 'top left',
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {entry.formattedTime}
+                                    </span>
+                                )
+                            ))}
                         </div>
                     </div>
                 </div>
