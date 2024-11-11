@@ -39,56 +39,113 @@ const Dashboard = () => {
         return () => clearInterval(interval);
     }, []);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
-    if (!logs?.length) return <div>No logs found</div>;
+    if (loading) return <div className="text-gray-300">Loading...</div>;
+    if (error) return <div className="text-red-400">Error: {error}</div>;
+    if (!logs?.length) return <div className="text-gray-300">No logs found</div>;
 
     return (
-        <div className="dashboard">
-            <div className="status-bar">
-                <p>Last updated: {lastUpdate}</p>
-                <p>Logs loaded: {logs.length}</p>
-                {loading && <p>Refreshing...</p>}
+        <div style={{
+            backgroundColor: '#1a1b1e',
+            minHeight: '100vh',
+            padding: '1.5rem',
+            color: '#e1e1e3'
+        }}>
+            <div style={{
+                marginBottom: '1.5rem',
+                padding: '1rem',
+                backgroundColor: '#2c2d31',
+                borderRadius: '0.5rem',
+                border: '1px solid #3f3f46'
+            }}>
+                <p style={{ color: '#a1a1a3' }}>Last updated: {lastUpdate}</p>
+                <p style={{ color: '#a1a1a3' }}>Logs loaded: {logs.length}</p>
+                {loading && <p style={{ color: '#a1a1a3' }}>Refreshing...</p>}
             </div>
 
-            <div style={{display: 'flex', gap: '1.5rem'}}>
-                <div style={{width: '50%'}}>
-                    <AnomalousIPs/>
+            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                <div style={{ width: '50%' }}>
+                    <AnomalousIPs />
                 </div>
-                <div style={{width: '50%'}}>
-                    <AttackTimeline/>
+                <div style={{ width: '50%' }}>
+                    <AttackTimeline />
                 </div>
             </div>
 
-            <div className="logs-container">
-                <h2>Recent Logs</h2>
+            <div style={{
+                backgroundColor: '#2c2d31',
+                borderRadius: '0.5rem',
+                border: '1px solid #3f3f46',
+                padding: '1.5rem'
+            }}>
+                <h2 style={{
+                    color: '#e1e1e3',
+                    fontSize: '1.5rem',
+                    marginBottom: '1rem'
+                }}>Recent Logs</h2>
                 {logs.length === 0 ? (
-                    <p>No logs found</p>
+                    <p style={{ color: '#a1a1a3' }}>No logs found</p>
                 ) : (
-                    <div className="logs-table">
+                    <div>
                         {logs.map((log, index) => (
                             <div
                                 key={index}
-                                className={`log-entry ${log.analysis_result?.injection_detected ? 'attack' : 'normal'}`}
+                                style={{
+                                    backgroundColor: '#1a1b1e',
+                                    borderRadius: '0.5rem',
+                                    marginBottom: '0.5rem',
+                                    border: '1px solid #3f3f46',
+                                    borderLeft: log.analysis_result?.injection_detected ?
+                                        '4px solid #dc2626' : '4px solid #22c55e'
+                                }}
                             >
-                                <div className="log-header">
-                                    <span className="timestamp">{log.timestamp}</span>
-                                    <span
-                                        className={`status ${log.analysis_result?.injection_detected ? 'attack' : 'normal'}`}>
+                                <div style={{
+                                    padding: '0.75rem',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid #3f3f46'
+                                }}>
+                                    <span style={{ color: '#a1a1a3', fontSize: '0.875rem' }}>
+                                        {log.timestamp}
+                                    </span>
+                                    <span style={{
+                                        padding: '0.25rem 0.75rem',
+                                        borderRadius: '9999px',
+                                        fontSize: '0.875rem',
+                                        backgroundColor: log.analysis_result?.injection_detected ?
+                                            'rgba(220, 38, 38, 0.1)' : 'rgba(34, 197, 94, 0.1)',
+                                        color: log.analysis_result?.injection_detected ?
+                                            '#dc2626' : '#22c55e'
+                                    }}>
                                         {log.analysis_result?.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
                                     </span>
                                 </div>
-                                <div className="log-details">
-                                    <p><strong>Method:</strong> {log.method}</p>
-                                    <p><strong>Path:</strong> {log.path}</p>
-                                    {log.query && <p><strong>Query:</strong> {log.query}</p>}
-                                    <p><strong>IP:</strong> {log.ip}</p>
+                                <div style={{ padding: '0.75rem' }}>
+                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                        <strong style={{ color: '#e1e1e3' }}>Method:</strong> {log.method}
+                                    </p>
+                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                        <strong style={{ color: '#e1e1e3' }}>Path:</strong> {log.path}
+                                    </p>
+                                    {log.query && (
+                                        <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                            <strong style={{ color: '#e1e1e3' }}>Query:</strong> {log.query}
+                                        </p>
+                                    )}
+                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                        <strong style={{ color: '#e1e1e3' }}>IP:</strong> {log.ip}
+                                    </p>
                                     {log.analysis_result?.matched_rules?.length > 0 && (
-                                        <p><strong>Matched
-                                            Rules:</strong> {log.analysis_result.matched_rules.join(', ')}</p>
+                                        <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                            <strong style={{ color: '#e1e1e3' }}>Matched Rules:</strong>
+                                            {log.analysis_result.matched_rules.join(', ')}
+                                        </p>
                                     )}
                                     {log.analysis_result?.message && (
-                                        <p><strong>Message:</strong> {log.analysis_result.message}</p>
+                                        <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                            <strong style={{ color: '#e1e1e3' }}>Message:</strong>
+                                            {log.analysis_result.message}
+                                        </p>
                                     )}
                                 </div>
                             </div>

@@ -25,33 +25,91 @@ const AnomalousIPs = () => {
         return () => clearInterval(interval);
     }, []);
 
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
+    if (loading) return (
+        <div style={{
+            backgroundColor: '#2c2d31',
+            padding: '1.5rem',
+            borderRadius: '0.5rem',
+            color: '#a1a1a3'
+        }}>
+            Loading...
+        </div>
+    );
+
+    if (error) return (
+        <div style={{
+            backgroundColor: '#2c2d31',
+            padding: '1.5rem',
+            borderRadius: '0.5rem',
+            color: '#dc2626'
+        }}>
+            Error: {error}
+        </div>
+    );
 
     return (
-        <div className="logs-container">
-            <h2>Anomalous IPs</h2>
+        <div style={{
+            backgroundColor: '#2c2d31',
+            padding: '1.5rem',
+            borderRadius: '0.5rem',
+            border: '1px solid #3f3f46'
+        }}>
+            <h2 style={{
+                color: '#e1e1e3',
+                fontSize: '1.5rem',
+                marginBottom: '1rem'
+            }}>Anomalous IPs</h2>
+
             {anomalousIPs.length === 0 ? (
-                <p>No anomalous IPs found</p>
+                <p style={{ color: '#a1a1a3' }}>No anomalous IPs found</p>
             ) : (
-                <div className="logs-table">
+                <div>
                     {anomalousIPs.map((ip) => (
                         <div
                             key={ip.ip}
-                            className={`log-entry attack`}
+                            style={{
+                                backgroundColor: '#1a1b1e',
+                                borderRadius: '0.5rem',
+                                marginBottom: '0.5rem',
+                                border: '1px solid #3f3f46',
+                                borderLeft: '4px solid #dc2626'
+                            }}
                         >
-                            <div className="log-header">
-                                <span className="timestamp">{new Date(ip.last_detected).toLocaleString()}</span>
-                                <span className="status attack">
+                            <div style={{
+                                padding: '0.75rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                borderBottom: '1px solid #3f3f46'
+                            }}>
+                                <span style={{ color: '#a1a1a3', fontSize: '0.875rem' }}>
+                                    {new Date(ip.last_detected).toLocaleString()}
+                                </span>
+                                <span style={{
+                                    padding: '0.25rem 0.75rem',
+                                    borderRadius: '9999px',
+                                    fontSize: '0.875rem',
+                                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                                    color: '#dc2626'
+                                }}>
                                     ⚠️ Risk Level: {ip.threat_level.toFixed(1)}%
                                 </span>
                             </div>
-                            <div className="log-details">
-                                <p><strong>IP Address:</strong> {ip.ip}</p>
-                                <p><strong>Total Requests:</strong> {ip.total_requests}</p>
-                                <p><strong>Anomalous Requests:</strong> {ip.anomalous_requests}</p>
+                            <div style={{ padding: '0.75rem' }}>
+                                <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                    <strong style={{ color: '#e1e1e3' }}>IP Address:</strong> {ip.ip}
+                                </p>
+                                <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                    <strong style={{ color: '#e1e1e3' }}>Total Requests:</strong> {ip.total_requests}
+                                </p>
+                                <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                    <strong style={{ color: '#e1e1e3' }}>Anomalous Requests:</strong> {ip.anomalous_requests}
+                                </p>
                                 {ip.matched_rules?.length > 0 && (
-                                    <p><strong>Matched Rules:</strong> {ip.matched_rules.join(', ')}</p>
+                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                        <strong style={{ color: '#e1e1e3' }}>Matched Rules:</strong>
+                                        {ip.matched_rules.join(', ')}
+                                    </p>
                                 )}
                             </div>
                         </div>
