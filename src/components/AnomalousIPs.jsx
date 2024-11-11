@@ -1,6 +1,4 @@
-// AnomalousIPs.jsx
 import React, { useState, useEffect } from 'react';
-import { Shield, AlertTriangle, Activity } from 'lucide-react';
 
 const AnomalousIPs = () => {
     const [anomalousIPs, setAnomalousIPs] = useState([]);
@@ -40,7 +38,7 @@ const AnomalousIPs = () => {
     return (
         <div className="bg-white shadow rounded-lg p-6 mb-6">
             <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-5 h-5" />
+                <span className="text-xl">🛡️</span>
                 <h2 className="text-xl font-bold">Detected Threats</h2>
             </div>
 
@@ -52,11 +50,11 @@ const AnomalousIPs = () => {
                         <div key={ip.ip} className="border rounded-lg p-4 bg-gray-50">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="flex items-center gap-2">
-                                    <AlertTriangle className={`w-5 h-5 ${getThreatLevelColor(ip.threat_level)}`} />
+                                    <span className="text-lg">⚠️</span>
                                     <h3 className="font-medium">{ip.ip}</h3>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Activity className="w-4 h-4" />
+                                    <span className="text-base">📊</span>
                                     <span className={`font-bold ${getThreatLevelColor(ip.threat_level)}`}>
                                         {ip.threat_level.toFixed(1)}% Risk
                                     </span>
