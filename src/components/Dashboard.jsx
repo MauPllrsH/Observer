@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 
-const API_URL = 'http://157.245.249.219:5000'; // Use the service name from docker-compose
+const API_URL = 'http://157.245.249.219:5000';
 
 const Dashboard = () => {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString());
 
     useEffect(() => {
         const fetchData = async () => {
@@ -21,6 +22,7 @@ const Dashboard = () => {
                 const data = await response.json();
                 console.log('Received logs:', data);
                 setLogs(data);
+                setLastUpdate(new Date().toLocaleString());
                 setError(null);
             } catch (error) {
                 console.error('Error fetching logs:', error);
@@ -38,7 +40,6 @@ const Dashboard = () => {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
     if (!logs?.length) return <div>No logs found</div>;
-
 
     return (
         <div className="dashboard">
@@ -62,8 +63,8 @@ const Dashboard = () => {
                                 <div className="log-header">
                                     <span className="timestamp">{log.timestamp}</span>
                                     <span className={`status ${log.analysis_result?.injection_detected ? 'attack' : 'normal'}`}>
-                    {log.analysis_result?.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
-                  </span>
+                                        {log.analysis_result?.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
+                                    </span>
                                 </div>
                                 <div className="log-details">
                                     <p><strong>Method:</strong> {log.method}</p>
@@ -83,7 +84,7 @@ const Dashboard = () => {
                 )}
             </div>
         </div>
-    )
+    );
 }
 
-export default Dashboard
+export default Dashboard;
