@@ -6,11 +6,12 @@ RUN addgroup -g 1001 appgroup && \
     adduser -D -u 1001 -G appgroup appuser
 
 COPY package*.json ./
-RUN npm install
+RUN npm install && \
+    mkdir -p node_modules/.vite && \
+    chown -R appuser:appgroup /app && \
+    chmod -R 755 /app/node_modules
 
-COPY . .
-
-RUN chown -R appuser:appgroup /app
+COPY --chown=appuser:appgroup . .
 
 USER appuser
 
