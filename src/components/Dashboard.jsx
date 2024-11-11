@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const API_URL = 'http://dashboard_backend:5000'; // Use the service name from docker-compose
+const API_URL = 'http://localhost:5000'; // Use the service name from docker-compose
 
 const Dashboard = () => {
     const [logs, setLogs] = useState([]);
