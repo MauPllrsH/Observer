@@ -1,47 +1,44 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react';
+
+const API_URL = 'http://dashboard_backend:5000'; // Use the service name from docker-compose
 
 const Dashboard = () => {
-    const [logs, setLogs] = useState([])
-    const [error, setError] = useState(null)
-    const [loading, setLoading] = useState(true)
-    const [lastUpdate, setLastUpdate] = useState(null)
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                setLoading(true)
-                console.log('Fetching logs...')
-
-                const response = await fetch('http://localhost:5000/api/logs')
-                console.log('Response status:', response.status)
+                console.log('Fetching logs...');
+                const response = await fetch(`${API_URL}/api/logs`);
+                console.log('Response status:', response.status);
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`)
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                const data = await response.json()
-                console.log('Received logs:', data)
-                console.log('Number of logs:', data.length)
-
-                setLogs(data)
-                setLastUpdate(new Date().toLocaleTimeString())
-                setError(null)
+                const data = await response.json();
+                console.log('Received logs:', data);
+                setLogs(data);
+                setError(null);
             } catch (error) {
-                console.error('Error fetching logs:', error)
-                setError(error.message)
+                console.error('Error fetching logs:', error);
+                setError(error.message);
             } finally {
-                setLoading(false)
+                setLoading(false);
             }
-        }
+        };
 
-        fetchData()
-        const interval = setInterval(fetchData, 5000)
-        return () => clearInterval(interval)
-    }, [])
+        fetchData();
+        const interval = setInterval(fetchData, 5000);
+        return () => clearInterval(interval);
+    }, []);
 
-    if (error) {
-        return <div className="error">Error: {error}</div>
-    }
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+    if (!logs?.length) return <div>No logs found</div>;
+
 
     return (
         <div className="dashboard">
