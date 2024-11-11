@@ -2,15 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies first (including dev dependencies)
+RUN addgroup -g 1001 appgroup && \
+    adduser -D -u 1001 -G appgroup appuser
+
 COPY package*.json ./
 RUN npm install
-RUN npm install @vitejs/plugin-react@latest --save-dev
 
-# Then copy the rest of the files
 COPY . .
+
+RUN chown -R appuser:appgroup /app
+
+USER appuser
 
 EXPOSE 3000
 
-# Start the app
 CMD ["npm", "run", "dev"]
