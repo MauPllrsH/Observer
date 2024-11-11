@@ -10,9 +10,19 @@
   --normal-bg: rgba(34, 197, 94, 0.1);
 }
 
+* {
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
 body {
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: #1a1b1e;
+  color: #e1e1e3;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-weight: 700;
 }
 
 .dashboard {
