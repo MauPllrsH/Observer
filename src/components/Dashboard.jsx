@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AnomalousIPs from "./AnomalousIPs.jsx";
 
 const API_URL = 'http://157.245.249.219:5000';
 
@@ -48,6 +49,8 @@ const Dashboard = () => {
                 <p>Logs loaded: {logs.length}</p>
                 {loading && <p>Refreshing...</p>}
             </div>
+
+            <AnomalousIPs />
 
             <div className="logs-container">
                 <h2>Recent Logs</h2>
