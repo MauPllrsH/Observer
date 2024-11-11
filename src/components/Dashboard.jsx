@@ -1,29 +1,36 @@
-// src/components/Dashboard.jsx
 import { useState, useEffect } from 'react'
 
 const Dashboard = () => {
     const [logs, setLogs] = useState([])
-    const [stats, setStats] = useState({
-        total_logs: 0,
-        total_attacks: 0,
-        recent_attacks: 0
-    })
+    const [error, setError] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [lastUpdate, setLastUpdate] = useState(null)
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [logsResponse, statsResponse] = await Promise.all([
-                    fetch('http://localhost:5000/api/logs'),
-                    fetch('http://localhost:5000/api/stats')
-                ])
+                setLoading(true)
+                console.log('Fetching logs...')
 
-                const logsData = await logsResponse.json()
-                const statsData = await statsResponse.json()
+                const response = await fetch('http://localhost:5000/api/logs')
+                console.log('Response status:', response.status)
 
-                setLogs(logsData)
-                setStats(statsData)
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`)
+                }
+
+                const data = await response.json()
+                console.log('Received logs:', data)
+                console.log('Number of logs:', data.length)
+
+                setLogs(data)
+                setLastUpdate(new Date().toLocaleTimeString())
+                setError(null)
             } catch (error) {
-                console.error('Error fetching data:', error)
+                console.error('Error fetching logs:', error)
+                setError(error.message)
+            } finally {
+                setLoading(false)
             }
         }
 
@@ -32,50 +39,51 @@ const Dashboard = () => {
         return () => clearInterval(interval)
     }, [])
 
+    if (error) {
+        return <div className="error">Error: {error}</div>
+    }
+
     return (
         <div className="dashboard">
-            <div className="stats-container">
-                <div className="stat-box">
-                    <h3>Total Logs</h3>
-                    <p>{stats.total_logs}</p>
-                </div>
-                <div className="stat-box">
-                    <h3>Total Attacks</h3>
-                    <p>{stats.total_attacks}</p>
-                </div>
-                <div className="stat-box">
-                    <h3>Recent Attacks (24h)</h3>
-                    <p>{stats.recent_attacks}</p>
-                </div>
+            <div className="status-bar">
+                <p>Last updated: {lastUpdate}</p>
+                <p>Logs loaded: {logs.length}</p>
+                {loading && <p>Refreshing...</p>}
             </div>
 
             <div className="logs-container">
                 <h2>Recent Logs</h2>
-                <div className="logs-table">
-                    {logs.map((log, index) => (
-                        <div
-                            key={index}
-                            className={`log-entry ${log.analysis_result.injection_detected ? 'attack' : 'normal'}`}
-                        >
-                            <div className="log-header">
-                                <span className="timestamp">{log.timestamp}</span>
-                                <span className={`status ${log.analysis_result.injection_detected ? 'attack' : 'normal'}`}>
-                  {log.analysis_result.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
-                </span>
+                {logs.length === 0 ? (
+                    <p>No logs found</p>
+                ) : (
+                    <div className="logs-table">
+                        {logs.map((log, index) => (
+                            <div
+                                key={index}
+                                className={`log-entry ${log.analysis_result?.injection_detected ? 'attack' : 'normal'}`}
+                            >
+                                <div className="log-header">
+                                    <span className="timestamp">{log.timestamp}</span>
+                                    <span className={`status ${log.analysis_result?.injection_detected ? 'attack' : 'normal'}`}>
+                    {log.analysis_result?.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
+                  </span>
+                                </div>
+                                <div className="log-details">
+                                    <p><strong>Method:</strong> {log.method}</p>
+                                    <p><strong>Path:</strong> {log.path}</p>
+                                    {log.query && <p><strong>Query:</strong> {log.query}</p>}
+                                    <p><strong>IP:</strong> {log.ip}</p>
+                                    {log.analysis_result?.matched_rules?.length > 0 && (
+                                        <p><strong>Matched Rules:</strong> {log.analysis_result.matched_rules.join(', ')}</p>
+                                    )}
+                                    {log.analysis_result?.message && (
+                                        <p><strong>Message:</strong> {log.analysis_result.message}</p>
+                                    )}
+                                </div>
                             </div>
-                            <div className="log-details">
-                                <p><strong>IP:</strong> {log.ip}</p>
-                                <p><strong>Method:</strong> {log.method}</p>
-                                <p><strong>Path:</strong> {log.path}</p>
-                                {log.query && <p><strong>Query:</strong> {log.query}</p>}
-                                {log.analysis_result.matched_rules.length > 0 && (
-                                    <p><strong>Matched Rules:</strong> {log.analysis_result.matched_rules.join(', ')}</p>
-                                )}
-                                <p><strong>Message:</strong> {log.analysis_result.message}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     )
