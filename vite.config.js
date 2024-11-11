@@ -4,10 +4,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
     plugins: [react()],
     server: {
-        host: true,  // Expose to all network interfaces
-        port: 3000,  // Match the port in docker-compose
+        host: true,
+        port: 3000,
         watch: {
-            usePolling: true  // Necessary for Docker on some systems
+            usePolling: true
         }
     }
 })
