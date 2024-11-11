@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import AnomalousIPs from "./AnomalousIPs.jsx";
+import AttackTimeline from "./AttackTimeline.jsx";
 
 const API_URL = 'http://157.245.249.219:5000';
 
@@ -50,7 +51,14 @@ const Dashboard = () => {
                 {loading && <p>Refreshing...</p>}
             </div>
 
-            <AnomalousIPs />
+            <div style={{display: 'flex', gap: '1.5rem'}}>
+                <div style={{width: '50%'}}>
+                    <AnomalousIPs/>
+                </div>
+                <div style={{width: '50%'}}>
+                    <AttackTimeline/>
+                </div>
+            </div>
 
             <div className="logs-container">
                 <h2>Recent Logs</h2>
@@ -65,7 +73,8 @@ const Dashboard = () => {
                             >
                                 <div className="log-header">
                                     <span className="timestamp">{log.timestamp}</span>
-                                    <span className={`status ${log.analysis_result?.injection_detected ? 'attack' : 'normal'}`}>
+                                    <span
+                                        className={`status ${log.analysis_result?.injection_detected ? 'attack' : 'normal'}`}>
                                         {log.analysis_result?.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
                                     </span>
                                 </div>
@@ -75,7 +84,8 @@ const Dashboard = () => {
                                     {log.query && <p><strong>Query:</strong> {log.query}</p>}
                                     <p><strong>IP:</strong> {log.ip}</p>
                                     {log.analysis_result?.matched_rules?.length > 0 && (
-                                        <p><strong>Matched Rules:</strong> {log.analysis_result.matched_rules.join(', ')}</p>
+                                        <p><strong>Matched
+                                            Rules:</strong> {log.analysis_result.matched_rules.join(', ')}</p>
                                     )}
                                     {log.analysis_result?.message && (
                                         <p><strong>Message:</strong> {log.analysis_result.message}</p>
