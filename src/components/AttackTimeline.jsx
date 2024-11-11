@@ -16,6 +16,7 @@ const AttackTimeline = () => {
                     ...entry,
                     formattedTime: new Date(entry.timestamp).toLocaleTimeString('en-US', {
                         hour: 'numeric',
+                        minute: 'numeric',
                         hour12: true
                     })
                 }));
@@ -48,133 +49,98 @@ const AttackTimeline = () => {
         </div>
     );
 
-    // Find the maximum values for scaling
-    const maxTotal = Math.max(...timelineData.map(d => d.total_requests));
-    const maxAttacks = Math.max(...timelineData.map(d => d.attacks));
+    const maxAttacks = Math.max(...timelineData.map(d => d.attacks)) || 1;
 
     return (
         <div className="logs-container">
-            <h2>Attack Timeline</h2>
+            <h2>Attack Timeline (Last 24 Hours)</h2>
             <div className="log-entry">
-                <div className="timeline-stats">
-                    <div className="stat-box">
-                        <span className="stat-label">Peak Requests</span>
-                        <span className="stat-value">{maxTotal}</span>
+                <div style={{
+                    height: '300px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1rem',
+                    padding: '1rem'
+                }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '0.5rem',
+                        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                        borderRadius: '4px'
+                    }}>
+                        <span>Peak Attacks: {maxAttacks}</span>
+                        <span>Total Points: {timelineData.length}</span>
                     </div>
-                    <div className="stat-box attack">
-                        <span className="stat-label">Peak Attacks</span>
-                        <span className="stat-value">{maxAttacks}</span>
-                    </div>
-                </div>
-                <div className="timeline-container">
-                    {timelineData.map((entry, index) => {
-                        const totalHeight = (entry.total_requests / maxTotal) * 100;
-                        const attackHeight = (entry.attacks / maxTotal) * 100;
 
-                        return (
-                            <div key={index} className="timeline-bar">
-                                <div className="bar-container">
-                                    <div
-                                        className="total-bar"
-                                        style={{ height: `${totalHeight}%` }}
-                                        title={`Total Requests: ${entry.total_requests}`}
-                                    />
-                                    <div
-                                        className="attack-bar"
-                                        style={{ height: `${attackHeight}%` }}
-                                        title={`Attacks: ${entry.attacks}`}
-                                    />
+                    <div style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'flex-end',
+                        gap: '2px',
+                        padding: '20px 0',
+                        position: 'relative',
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                        borderRadius: '4px'
+                    }}>
+                        {timelineData.map((entry, index) => (
+                            <div
+                                key={index}
+                                style={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    height: '100%',
+                                    position: 'relative'
+                                }}
+                            >
+                                <div style={{
+                                    width: '100%',
+                                    height: `${(entry.attacks / maxAttacks) * 100}%`,
+                                    backgroundColor: entry.attacks > 0 ? 'rgba(255, 77, 79, 0.6)' : 'rgba(0, 0, 0, 0.1)',
+                                    transition: 'height 0.3s ease',
+                                    position: 'relative',
+                                    cursor: 'pointer'
+                                }}
+                                     title={`Time: ${entry.formattedTime}
+Attacks: ${entry.attacks}
+Total Requests: ${entry.total_requests}`}
+                                />
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '-25px',
+                                    fontSize: '0.7rem',
+                                    transform: 'rotate(-45deg)',
+                                    transformOrigin: 'top left',
+                                    whiteSpace: 'nowrap',
+                                    color: '#666'
+                                }}>
+                                    {entry.formattedTime}
                                 </div>
-                                <span className="time-label">{entry.formattedTime}</span>
                             </div>
-                        );
-                    })}
+                        ))}
+
+                        {/* Y-axis markers */}
+                        <div style={{
+                            position: 'absolute',
+                            left: '-40px',
+                            top: 0,
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            color: '#666',
+                            fontSize: '0.8rem'
+                        }}>
+                            <span>{maxAttacks}</span>
+                            <span>{Math.floor(maxAttacks / 2)}</span>
+                            <span>0</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <style jsx>{`
-                .timeline-stats {
-                    display: flex;
-                    gap: 1rem;
-                    margin-bottom: 1rem;
-                    padding: 0.5rem;
-                }
-
-                .stat-box {
-                    flex: 1;
-                    padding: 0.5rem;
-                    border-radius: 4px;
-                    background: rgba(0, 0, 255, 0.1);
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                }
-
-                .stat-box.attack {
-                    background: rgba(255, 0, 0, 0.1);
-                }
-
-                .stat-label {
-                    font-size: 0.875rem;
-                    color: #666;
-                }
-
-                .stat-value {
-                    font-size: 1.25rem;
-                    font-weight: bold;
-                }
-
-                .timeline-container {
-                    height: 300px;
-                    display: flex;
-                    align-items: flex-end;
-                    gap: 4px;
-                    padding: 1rem;
-                    background: rgba(0, 0, 0, 0.02);
-                    border-radius: 4px;
-                }
-
-                .timeline-bar {
-                    flex: 1;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    min-width: 30px;
-                }
-
-                .bar-container {
-                    width: 100%;
-                    height: 100%;
-                    position: relative;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: flex-end;
-                }
-
-                .total-bar {
-                    width: 100%;
-                    background: rgba(0, 0, 255, 0.2);
-                    transition: height 0.3s ease;
-                    border-radius: 2px 2px 0 0;
-                }
-
-                .attack-bar {
-                    width: 100%;
-                    background: rgba(255, 0, 0, 0.3);
-                    position: absolute;
-                    bottom: 0;
-                    transition: height 0.3s ease;
-                    border-radius: 2px 2px 0 0;
-                }
-
-                .time-label {
-                    font-size: 0.75rem;
-                    color: #666;
-                    margin-top: 0.5rem;
-                    transform: rotate(-45deg);
-                    white-space: nowrap;
-                }
-            `}</style>
         </div>
     );
 };
