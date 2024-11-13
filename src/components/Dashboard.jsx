@@ -5,26 +5,13 @@ import ErrorBoundary from "./ErrorBoundary.jsx";
 
 const API_URL = 'http://157.245.249.219:5000';
 
-const DashboardContent = () => {
-    const [logs, setLogs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString());
-    const [retryCount, setRetryCount] = useState(0);
-    const [isPollingPaused, setIsPollingPaused] = useState(false);
-
-    const fetchData = useCallback(async () => {
-        if (isPollingPaused) return;
-
-        const backoffDelay = (attempt) => Math.min(1000 * Math.pow(2, attempt), 10000);
-
+const fetchWithRetry = async (url, maxRetries = 3) => {
+    let attempt = 0;
+    while (attempt < maxRetries) {
         try {
-            console.log('Fetching logs... Attempt:', retryCount + 1);
-
-            const response = await fetch(`${API_URL}/api/logs`, {
+            const response = await fetch(url, {
                 headers: {
-                    'Accept': 'application/json',
-                    'Cache-Control': 'no-cache'
+                    'Accept': 'application/json'
                 }
             });
 
@@ -32,7 +19,25 @@ const DashboardContent = () => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            return await response.json();
+        } catch (error) {
+            attempt++;
+            if (attempt === maxRetries) throw error;
+            await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+        }
+    }
+};
+
+const DashboardContent = () => {
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString());
+
+    const fetchData = useCallback(async () => {
+        try {
+            setLoading(true);
+            const data = await fetchWithRetry(`${API_URL}/api/logs`);
 
             if (!Array.isArray(data)) {
                 throw new Error('Invalid data format received');
@@ -41,52 +46,24 @@ const DashboardContent = () => {
             setLogs(data);
             setLastUpdate(new Date().toLocaleString());
             setError(null);
-            setRetryCount(0);
-            setLoading(false);
-
         } catch (error) {
             console.error('Error fetching logs:', error);
-
-            const errorMessage = error.name === 'AbortError' ? 'Request timed out - retrying...' :
-                error.message.includes('reset') ? 'Connection interrupted - retrying...' :
-                    error.message;
-
-            setError(errorMessage);
+            setError(error.message);
+        } finally {
             setLoading(false);
-
-            if (retryCount < 3) {
-                setTimeout(() => {
-                    setRetryCount(prev => prev + 1);
-                }, backoffDelay(retryCount));
-            } else {
-                setIsPollingPaused(true);
-                setTimeout(() => {
-                    setIsPollingPaused(false);
-                    setRetryCount(0);
-                }, 30000);
-            }
         }
-    }, [retryCount, isPollingPaused]);
+    }, []);
 
     useEffect(() => {
         let mounted = true;
-        let pollInterval = null;
+        let interval;
 
         const startPolling = async () => {
             if (!mounted) return;
+            await fetchData();
 
-            try {
-                await fetchData();
-
-                if (mounted) {
-                    pollInterval = setInterval(() => {
-                        if (mounted && !isPollingPaused) {
-                            fetchData().catch(console.error);
-                        }
-                    }, 5000);
-                }
-            } catch (error) {
-                console.error('Polling error:', error);
+            if (mounted) {
+                interval = setInterval(fetchData, 5000);
             }
         };
 
@@ -94,11 +71,12 @@ const DashboardContent = () => {
 
         return () => {
             mounted = false;
-            if (pollInterval) {
-                clearInterval(pollInterval);
+            if (interval) {
+                clearInterval(interval);
             }
         };
-    }, [fetchData, isPollingPaused]);
+    }, [fetchData]);
+
 
     const handleRetry = useCallback(() => {
         setIsPollingPaused(false);
