@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import { useState, useEffect, useCallback } from 'react';
 import AnomalousIPs from "./AnomalousIPs.jsx";
 import AttackTimeline from "./AttackTimeline.jsx";
@@ -28,8 +27,8 @@ const DashboardContent = () => {
             const response = await fetch(`${API_URL}/api/logs`, {
                 signal: controller.signal,
                 headers: {
-                    'Accept': 'application/json',
-                    'Cache-Control': 'no-cache'
+                    'Accept': 'application/json'
+                    // Removed cache-control header to fix CORS issue
                 }
             });
 
@@ -60,7 +59,9 @@ const DashboardContent = () => {
             setState(prev => {
                 const newState = {
                     ...prev,
-                    error: error.name === 'AbortError' ? 'Request timed out. Retrying...' : error.message,
+                    error: error.name === 'AbortError' ? 'Request timed out. Retrying...' :
+                        error.message.includes('CORS') ? 'Network error - retrying...' :
+                            error.message,
                     loading: false
                 };
 
@@ -88,10 +89,22 @@ const DashboardContent = () => {
     }, [state.retryCount, state.isPollingPaused]);
 
     useEffect(() => {
-        fetchData();
+        let mounted = true;
 
-        const interval = setInterval(fetchData, 5000);
-        return () => clearInterval(interval);
+        const doFetch = async () => {
+            if (mounted) {
+                await fetchData();
+            }
+        };
+
+        doFetch();
+
+        const interval = setInterval(doFetch, 5000);
+
+        return () => {
+            mounted = false;
+            clearInterval(interval);
+        };
     }, [fetchData]);
 
     const handleRetry = useCallback(() => {
