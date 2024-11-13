@@ -1,22 +1,26 @@
+// Dashboard.jsx
 import { useState, useEffect, useCallback } from 'react';
 import AnomalousIPs from "./AnomalousIPs.jsx";
 import AttackTimeline from "./AttackTimeline.jsx";
+import ErrorBoundary from "./ErrorBoundary.jsx";
 
 const API_URL = 'http://157.245.249.219:5000';
 
-const Dashboard = () => {
-    const [logs, setLogs] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString());
-    const [retryCount, setRetryCount] = useState(0);
-    const [isPollingPaused, setIsPollingPaused] = useState(false);
+const DashboardContent = () => {
+    const [state, setState] = useState({
+        logs: [],
+        loading: true,
+        error: null,
+        lastUpdate: new Date().toLocaleString(),
+        retryCount: 0,
+        isPollingPaused: false
+    });
 
     const fetchData = useCallback(async () => {
-        if (isPollingPaused) return;
+        if (state.isPollingPaused) return;
 
         try {
-            console.log('Fetching logs... Attempt:', retryCount + 1);
+            console.log('Fetching logs... Attempt:', state.retryCount + 1);
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -41,60 +45,80 @@ const Dashboard = () => {
                 throw new Error('Invalid data format received');
             }
 
-            console.log('Received logs:', data.length);
-            setLogs(data);
-            setLastUpdate(new Date().toLocaleString());
-            setError(null);
-            setRetryCount(0);
+            setState(prev => ({
+                ...prev,
+                logs: data,
+                lastUpdate: new Date().toLocaleString(),
+                error: null,
+                retryCount: 0,
+                loading: false
+            }));
 
         } catch (error) {
             console.error('Error fetching logs:', error);
 
-            if (error.name === 'AbortError') {
-                setError('Request timed out. Retrying...');
-            } else {
-                setError(error.message);
-            }
+            setState(prev => {
+                const newState = {
+                    ...prev,
+                    error: error.name === 'AbortError' ? 'Request timed out. Retrying...' : error.message,
+                    loading: false
+                };
 
-            if (retryCount < 3) {
-                setRetryCount(prev => prev + 1);
-                setTimeout(() => {
-                    fetchData();
-                }, Math.min(1000 * Math.pow(2, retryCount), 10000));
-            } else {
-                setIsPollingPaused(true);
-                setTimeout(() => {
-                    setIsPollingPaused(false);
-                    setRetryCount(0);
-                }, 30000);
-            }
-        } finally {
-            setLoading(false);
+                if (prev.retryCount < 3) {
+                    setTimeout(() => {
+                        setState(current => ({
+                            ...current,
+                            retryCount: current.retryCount + 1
+                        }));
+                    }, Math.min(1000 * Math.pow(2, prev.retryCount), 10000));
+                } else {
+                    newState.isPollingPaused = true;
+                    setTimeout(() => {
+                        setState(current => ({
+                            ...current,
+                            isPollingPaused: false,
+                            retryCount: 0
+                        }));
+                    }, 30000);
+                }
+
+                return newState;
+            });
         }
-    }, [retryCount, isPollingPaused, fetchData]);
+    }, [state.retryCount, state.isPollingPaused]);
 
     useEffect(() => {
         fetchData();
+
         const interval = setInterval(fetchData, 5000);
         return () => clearInterval(interval);
     }, [fetchData]);
 
+    const handleRetry = useCallback(() => {
+        setState(prev => ({
+            ...prev,
+            isPollingPaused: false,
+            retryCount: 0,
+            loading: true
+        }));
+    }, []);
+
+    if (state.loading && !state.logs.length) {
+        return <div className="text-gray-300">Loading...</div>;
+    }
+
     return (
         <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
             <div className="mb-6 p-4 bg-[#2c2d31] rounded-lg border border-[#3f3f46]">
-                <p className="text-[#a1a1a3]">Last updated: {lastUpdate}</p>
-                <p className="text-[#a1a1a3]">Logs loaded: {logs.length}</p>
-                {loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
-                {error && (
+                <p className="text-[#a1a1a3]">Last updated: {state.lastUpdate}</p>
+                <p className="text-[#a1a1a3]">Logs loaded: {state.logs.length}</p>
+                {state.loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
+                {state.error && (
                     <div className="mt-2 p-2 bg-red-900/20 rounded border border-red-700">
                         <div className="text-red-400 flex items-center justify-between">
-                            <span>Error: {error}</span>
+                            <span>Error: {state.error}</span>
                             <button
-                                onClick={() => {
-                                    setIsPollingPaused(false);
-                                    setRetryCount(0);
-                                    fetchData();
-                                }}
+                                onClick={handleRetry}
                                 className="px-3 py-1 bg-red-900/30 rounded hover:bg-red-900/50 transition-colors"
                             >
                                 Retry Now
@@ -106,20 +130,24 @@ const Dashboard = () => {
 
             <div className="flex gap-6 mb-6">
                 <div className="w-1/2">
-                    <AnomalousIPs />
+                    <ErrorBoundary>
+                        <AnomalousIPs />
+                    </ErrorBoundary>
                 </div>
                 <div className="w-1/2">
-                    <AttackTimeline />
+                    <ErrorBoundary>
+                        <AttackTimeline />
+                    </ErrorBoundary>
                 </div>
             </div>
 
             <div className="bg-[#2c2d31] rounded-lg border border-[#3f3f46] p-6">
                 <h2 className="text-2xl mb-4">Recent Logs</h2>
-                {logs.length === 0 ? (
+                {state.logs.length === 0 ? (
                     <p className="text-[#a1a1a3]">No logs found</p>
                 ) : (
                     <div className="space-y-2">
-                        {logs.map((log, index) => (
+                        {state.logs.map((log, index) => (
                             <div
                                 key={index}
                                 className={`bg-[#1a1b1e] rounded-lg border border-[#3f3f46] 
@@ -172,6 +200,14 @@ const Dashboard = () => {
                 )}
             </div>
         </div>
+    );
+};
+
+const Dashboard = () => {
+    return (
+        <ErrorBoundary>
+            <DashboardContent />
+        </ErrorBoundary>
     );
 };
 
