@@ -15,30 +15,42 @@ const DashboardContent = () => {
         isPollingPaused: false
     });
 
-    const fetchData = useCallback(async () => {
-        if (state.isPollingPaused) return;
+    const fetchWithTimeout = async (url, options = {}, timeout = 5000) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), timeout);
 
         try {
-            console.log('Fetching logs... Attempt:', state.retryCount + 1);
-
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-            const response = await fetch(`${API_URL}/api/logs`, {
+            const response = await fetch(url, {
+                ...options,
                 signal: controller.signal,
                 headers: {
-                    'Accept': 'application/json'
-                    // Removed cache-control header to fix CORS issue
+                    'Accept': 'application/json',
+                    ...options.headers
                 }
             });
-
-            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            clearTimeout(id);
+            return data;
+        } catch (error) {
+            clearTimeout(id);
+            throw error;
+        }
+    };
+
+    const fetchData = useCallback(async () => {
+        if (state.isPollingPaused) return;
+
+        const backoffDelay = (attempt) => Math.min(1000 * Math.pow(2, attempt), 10000);
+
+        try {
+            console.log('Fetching logs... Attempt:', state.retryCount + 1);
+
+            const data = await fetchWithTimeout(`${API_URL}/api/logs`);
 
             if (!Array.isArray(data)) {
                 throw new Error('Invalid data format received');
@@ -59,8 +71,8 @@ const DashboardContent = () => {
             setState(prev => {
                 const newState = {
                     ...prev,
-                    error: error.name === 'AbortError' ? 'Request timed out. Retrying...' :
-                        error.message.includes('CORS') ? 'Network error - retrying...' :
+                    error: error.name === 'AbortError' ? 'Request timed out' :
+                        error.message.includes('reset') ? 'Connection reset - retrying...' :
                             error.message,
                     loading: false
                 };
@@ -71,7 +83,7 @@ const DashboardContent = () => {
                             ...current,
                             retryCount: current.retryCount + 1
                         }));
-                    }, Math.min(1000 * Math.pow(2, prev.retryCount), 10000));
+                    }, backoffDelay(prev.retryCount));
                 } else {
                     newState.isPollingPaused = true;
                     setTimeout(() => {
@@ -90,20 +102,33 @@ const DashboardContent = () => {
 
     useEffect(() => {
         let mounted = true;
+        let pollInterval;
 
-        const doFetch = async () => {
-            if (mounted) {
+        const startPolling = async () => {
+            if (!mounted) return;
+
+            try {
                 await fetchData();
+
+                if (mounted) {
+                    pollInterval = setInterval(() => {
+                        if (mounted && !state.isPollingPaused) {
+                            fetchData();
+                        }
+                    }, 5000);
+                }
+            } catch (error) {
+                console.error('Polling error:', error);
             }
         };
 
-        doFetch();
-
-        const interval = setInterval(doFetch, 5000);
+        startPolling();
 
         return () => {
             mounted = false;
-            clearInterval(interval);
+            if (pollInterval) {
+                clearInterval(pollInterval);
+            }
         };
     }, [fetchData]);
 
@@ -115,11 +140,6 @@ const DashboardContent = () => {
             loading: true
         }));
     }, []);
-
-    if (state.loading && !state.logs.length) {
-        return <div className="text-gray-300">Loading...</div>;
-    }
-
     return (
         <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
             <div className="mb-6 p-4 bg-[#2c2d31] rounded-lg border border-[#3f3f46]">
