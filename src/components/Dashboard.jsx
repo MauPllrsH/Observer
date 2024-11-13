@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AnomalousIPs from "./AnomalousIPs.jsx";
 import AttackTimeline from "./AttackTimeline.jsx";
 
@@ -9,141 +9,159 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString());
+    const [retryCount, setRetryCount] = useState(0);
+    const [isPollingPaused, setIsPollingPaused] = useState(false);
+
+    const fetchData = useCallback(async () => {
+        if (isPollingPaused) return;
+
+        try {
+            console.log('Fetching logs... Attempt:', retryCount + 1);
+
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+            const response = await fetch(`${API_URL}/api/logs`, {
+                signal: controller.signal,
+                headers: {
+                    'Accept': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            if (!Array.isArray(data)) {
+                throw new Error('Invalid data format received');
+            }
+
+            console.log('Received logs:', data.length);
+            setLogs(data);
+            setLastUpdate(new Date().toLocaleString());
+            setError(null);
+            setRetryCount(0);
+
+        } catch (error) {
+            console.error('Error fetching logs:', error);
+
+            if (error.name === 'AbortError') {
+                setError('Request timed out. Retrying...');
+            } else {
+                setError(error.message);
+            }
+
+            if (retryCount < 3) {
+                setRetryCount(prev => prev + 1);
+                setTimeout(() => {
+                    fetchData();
+                }, Math.min(1000 * Math.pow(2, retryCount), 10000));
+            } else {
+                setIsPollingPaused(true);
+                setTimeout(() => {
+                    setIsPollingPaused(false);
+                    setRetryCount(0);
+                }, 30000);
+            }
+        } finally {
+            setLoading(false);
+        }
+    }, [retryCount, isPollingPaused, fetchData]);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                console.log('Fetching logs...');
-                const response = await fetch(`${API_URL}/api/logs`);
-                console.log('Response status:', response.status);
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                console.log('Received logs:', data);
-                setLogs(data);
-                setLastUpdate(new Date().toLocaleString());
-                setError(null);
-            } catch (error) {
-                console.error('Error fetching logs:', error);
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchData();
         const interval = setInterval(fetchData, 5000);
         return () => clearInterval(interval);
-    }, []);
-
-    if (loading) return <div className="text-gray-300">Loading...</div>;
-    if (error) return <div className="text-red-400">Error: {error}</div>;
-    if (!logs?.length) return <div className="text-gray-300">No logs found</div>;
+    }, [fetchData]);
 
     return (
-        <div style={{
-            backgroundColor: '#1a1b1e',
-            minHeight: '100vh',
-            padding: '1.5rem',
-            color: '#e1e1e3'
-        }}>
-            <div style={{
-                marginBottom: '1.5rem',
-                padding: '1rem',
-                backgroundColor: '#2c2d31',
-                borderRadius: '0.5rem',
-                border: '1px solid #3f3f46'
-            }}>
-                <p style={{ color: '#a1a1a3' }}>Last updated: {lastUpdate}</p>
-                <p style={{ color: '#a1a1a3' }}>Logs loaded: {logs.length}</p>
-                {loading && <p style={{ color: '#a1a1a3' }}>Refreshing...</p>}
+        <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
+            <div className="mb-6 p-4 bg-[#2c2d31] rounded-lg border border-[#3f3f46]">
+                <p className="text-[#a1a1a3]">Last updated: {lastUpdate}</p>
+                <p className="text-[#a1a1a3]">Logs loaded: {logs.length}</p>
+                {loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
+                {error && (
+                    <div className="mt-2 p-2 bg-red-900/20 rounded border border-red-700">
+                        <div className="text-red-400 flex items-center justify-between">
+                            <span>Error: {error}</span>
+                            <button
+                                onClick={() => {
+                                    setIsPollingPaused(false);
+                                    setRetryCount(0);
+                                    fetchData();
+                                }}
+                                className="px-3 py-1 bg-red-900/30 rounded hover:bg-red-900/50 transition-colors"
+                            >
+                                Retry Now
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem' }}>
-                <div style={{ width: '50%' }}>
+            <div className="flex gap-6 mb-6">
+                <div className="w-1/2">
                     <AnomalousIPs />
                 </div>
-                <div style={{ width: '50%' }}>
+                <div className="w-1/2">
                     <AttackTimeline />
                 </div>
             </div>
 
-            <div style={{
-                backgroundColor: '#2c2d31',
-                borderRadius: '0.5rem',
-                border: '1px solid #3f3f46',
-                padding: '1.5rem'
-            }}>
-                <h2 style={{
-                    color: '#e1e1e3',
-                    fontSize: '1.5rem',
-                    marginBottom: '1rem'
-                }}>Recent Logs</h2>
+            <div className="bg-[#2c2d31] rounded-lg border border-[#3f3f46] p-6">
+                <h2 className="text-2xl mb-4">Recent Logs</h2>
                 {logs.length === 0 ? (
-                    <p style={{ color: '#a1a1a3' }}>No logs found</p>
+                    <p className="text-[#a1a1a3]">No logs found</p>
                 ) : (
-                    <div>
+                    <div className="space-y-2">
                         {logs.map((log, index) => (
                             <div
                                 key={index}
-                                style={{
-                                    backgroundColor: '#1a1b1e',
-                                    borderRadius: '0.5rem',
-                                    marginBottom: '0.5rem',
-                                    border: '1px solid #3f3f46',
-                                    borderLeft: log.analysis_result?.injection_detected ?
-                                        '4px solid #dc2626' : '4px solid #22c55e'
-                                }}
+                                className={`bg-[#1a1b1e] rounded-lg border border-[#3f3f46] 
+                                    ${log.analysis_result?.injection_detected
+                                    ? 'border-l-4 border-l-red-600'
+                                    : 'border-l-4 border-l-green-500'}`}
                             >
-                                <div style={{
-                                    padding: '0.75rem',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    borderBottom: '1px solid #3f3f46'
-                                }}>
-                                    <span style={{ color: '#a1a1a3', fontSize: '0.875rem' }}>
+                                <div className="p-3 flex justify-between items-center border-b border-[#3f3f46]">
+                                    <span className="text-sm text-[#a1a1a3]">
                                         {log.timestamp}
                                     </span>
-                                    <span style={{
-                                        padding: '0.25rem 0.75rem',
-                                        borderRadius: '9999px',
-                                        fontSize: '0.875rem',
-                                        backgroundColor: log.analysis_result?.injection_detected ?
-                                            'rgba(220, 38, 38, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-                                        color: log.analysis_result?.injection_detected ?
-                                            '#dc2626' : '#22c55e'
-                                    }}>
+                                    <span className={`px-3 py-1 rounded-full text-sm
+                                        ${log.analysis_result?.injection_detected
+                                        ? 'bg-red-600/10 text-red-600'
+                                        : 'bg-green-500/10 text-green-500'}`}>
                                         {log.analysis_result?.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
                                     </span>
                                 </div>
-                                <div style={{ padding: '0.75rem' }}>
-                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                        <strong style={{ color: '#e1e1e3' }}>Method:</strong> {log.method}
+                                <div className="p-3 space-y-2">
+                                    <p className="text-[#a1a1a3]">
+                                        <strong className="text-[#e1e1e3]">Method:</strong> {log.method}
                                     </p>
-                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                        <strong style={{ color: '#e1e1e3' }}>Path:</strong> {log.path}
+                                    <p className="text-[#a1a1a3]">
+                                        <strong className="text-[#e1e1e3]">Path:</strong> {log.path}
                                     </p>
                                     {log.query && (
-                                        <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                            <strong style={{ color: '#e1e1e3' }}>Query:</strong> {log.query}
+                                        <p className="text-[#a1a1a3]">
+                                            <strong className="text-[#e1e1e3]">Query:</strong> {log.query}
                                         </p>
                                     )}
-                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                        <strong style={{ color: '#e1e1e3' }}>IP:</strong> {log.ip}
+                                    <p className="text-[#a1a1a3]">
+                                        <strong className="text-[#e1e1e3]">IP:</strong> {log.ip}
                                     </p>
                                     {log.analysis_result?.matched_rules?.length > 0 && (
-                                        <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                            <strong style={{ color: '#e1e1e3' }}>Matched Rules:</strong>
+                                        <p className="text-[#a1a1a3]">
+                                            <strong className="text-[#e1e1e3]">Matched Rules:</strong>
                                             {log.analysis_result.matched_rules.join(', ')}
                                         </p>
                                     )}
                                     {log.analysis_result?.message && (
-                                        <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                            <strong style={{ color: '#e1e1e3' }}>Message:</strong>
+                                        <p className="text-[#a1a1a3]">
+                                            <strong className="text-[#e1e1e3]">Message:</strong>
                                             {log.analysis_result.message}
                                         </p>
                                     )}
@@ -155,6 +173,6 @@ const Dashboard = () => {
             </div>
         </div>
     );
-}
+};
 
 export default Dashboard;
