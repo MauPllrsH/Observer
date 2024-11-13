@@ -6,26 +6,25 @@ import ErrorBoundary from "./ErrorBoundary.jsx";
 const API_URL = 'http://157.245.249.219:5000';
 
 const DashboardContent = () => {
-    const [state, setState] = useState({
-        logs: [],
-        loading: true,
-        error: null,
-        lastUpdate: new Date().toLocaleString(),
-        retryCount: 0,
-        isPollingPaused: false
-    });
+    const [logs, setLogs] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString());
+    const [retryCount, setRetryCount] = useState(0);
+    const [isPollingPaused, setIsPollingPaused] = useState(false);
 
-    const fetchWithTimeout = async (url, options = {}, timeout = 5000) => {
-        const controller = new AbortController();
-        const id = setTimeout(() => controller.abort(), timeout);
+    const fetchData = useCallback(async () => {
+        if (isPollingPaused) return;
+
+        const backoffDelay = (attempt) => Math.min(1000 * Math.pow(2, attempt), 10000);
 
         try {
-            const response = await fetch(url, {
-                ...options,
-                signal: controller.signal,
+            console.log('Fetching logs... Attempt:', retryCount + 1);
+
+            const response = await fetch(`${API_URL}/api/logs`, {
                 headers: {
                     'Accept': 'application/json',
-                    ...options.headers
+                    'Cache-Control': 'no-cache'
                 }
             });
 
@@ -34,75 +33,44 @@ const DashboardContent = () => {
             }
 
             const data = await response.json();
-            clearTimeout(id);
-            return data;
-        } catch (error) {
-            clearTimeout(id);
-            throw error;
-        }
-    };
-
-    const fetchData = useCallback(async () => {
-        if (state.isPollingPaused) return;
-
-        const backoffDelay = (attempt) => Math.min(1000 * Math.pow(2, attempt), 10000);
-
-        try {
-            console.log('Fetching logs... Attempt:', state.retryCount + 1);
-
-            const data = await fetchWithTimeout(`${API_URL}/api/logs`);
 
             if (!Array.isArray(data)) {
                 throw new Error('Invalid data format received');
             }
 
-            setState(prev => ({
-                ...prev,
-                logs: data,
-                lastUpdate: new Date().toLocaleString(),
-                error: null,
-                retryCount: 0,
-                loading: false
-            }));
+            setLogs(data);
+            setLastUpdate(new Date().toLocaleString());
+            setError(null);
+            setRetryCount(0);
+            setLoading(false);
 
         } catch (error) {
             console.error('Error fetching logs:', error);
 
-            setState(prev => {
-                const newState = {
-                    ...prev,
-                    error: error.name === 'AbortError' ? 'Request timed out' :
-                        error.message.includes('reset') ? 'Connection reset - retrying...' :
-                            error.message,
-                    loading: false
-                };
+            const errorMessage = error.name === 'AbortError' ? 'Request timed out - retrying...' :
+                error.message.includes('reset') ? 'Connection interrupted - retrying...' :
+                    error.message;
 
-                if (prev.retryCount < 3) {
-                    setTimeout(() => {
-                        setState(current => ({
-                            ...current,
-                            retryCount: current.retryCount + 1
-                        }));
-                    }, backoffDelay(prev.retryCount));
-                } else {
-                    newState.isPollingPaused = true;
-                    setTimeout(() => {
-                        setState(current => ({
-                            ...current,
-                            isPollingPaused: false,
-                            retryCount: 0
-                        }));
-                    }, 30000);
-                }
+            setError(errorMessage);
+            setLoading(false);
 
-                return newState;
-            });
+            if (retryCount < 3) {
+                setTimeout(() => {
+                    setRetryCount(prev => prev + 1);
+                }, backoffDelay(retryCount));
+            } else {
+                setIsPollingPaused(true);
+                setTimeout(() => {
+                    setIsPollingPaused(false);
+                    setRetryCount(0);
+                }, 30000);
+            }
         }
-    }, [state.retryCount, state.isPollingPaused]);
+    }, [retryCount, isPollingPaused]);
 
     useEffect(() => {
         let mounted = true;
-        let pollInterval;
+        let pollInterval = null;
 
         const startPolling = async () => {
             if (!mounted) return;
@@ -112,8 +80,8 @@ const DashboardContent = () => {
 
                 if (mounted) {
                     pollInterval = setInterval(() => {
-                        if (mounted && !state.isPollingPaused) {
-                            fetchData();
+                        if (mounted && !isPollingPaused) {
+                            fetchData().catch(console.error);
                         }
                     }, 5000);
                 }
@@ -130,26 +98,36 @@ const DashboardContent = () => {
                 clearInterval(pollInterval);
             }
         };
-    }, [fetchData]);
+    }, [fetchData, isPollingPaused]);
 
     const handleRetry = useCallback(() => {
-        setState(prev => ({
-            ...prev,
-            isPollingPaused: false,
-            retryCount: 0,
-            loading: true
-        }));
+        setIsPollingPaused(false);
+        setRetryCount(0);
+        setLoading(true);
+        setError(null);
     }, []);
+
+    if (loading && !logs.length) {
+        return (
+            <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
+                <div className="flex items-center justify-center p-4">
+                    <div className="animate-spin mr-2">⟳</div> Loading...
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
+            {/* Status Bar */}
             <div className="mb-6 p-4 bg-[#2c2d31] rounded-lg border border-[#3f3f46]">
-                <p className="text-[#a1a1a3]">Last updated: {state.lastUpdate}</p>
-                <p className="text-[#a1a1a3]">Logs loaded: {state.logs.length}</p>
-                {state.loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
-                {state.error && (
+                <p className="text-[#a1a1a3]">Last updated: {lastUpdate}</p>
+                <p className="text-[#a1a1a3]">Logs loaded: {logs.length}</p>
+                {loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
+                {error && (
                     <div className="mt-2 p-2 bg-red-900/20 rounded border border-red-700">
                         <div className="text-red-400 flex items-center justify-between">
-                            <span>Error: {state.error}</span>
+                            <span>Error: {error}</span>
                             <button
                                 onClick={handleRetry}
                                 className="px-3 py-1 bg-red-900/30 rounded hover:bg-red-900/50 transition-colors"
@@ -161,6 +139,7 @@ const DashboardContent = () => {
                 )}
             </div>
 
+            {/* Component panels */}
             <div className="flex gap-6 mb-6">
                 <div className="w-1/2">
                     <ErrorBoundary>
@@ -174,13 +153,14 @@ const DashboardContent = () => {
                 </div>
             </div>
 
+            {/* Logs panel */}
             <div className="bg-[#2c2d31] rounded-lg border border-[#3f3f46] p-6">
                 <h2 className="text-2xl mb-4">Recent Logs</h2>
-                {state.logs.length === 0 ? (
+                {logs.length === 0 ? (
                     <p className="text-[#a1a1a3]">No logs found</p>
                 ) : (
                     <div className="space-y-2">
-                        {state.logs.map((log, index) => (
+                        {logs.map((log, index) => (
                             <div
                                 key={index}
                                 className={`bg-[#1a1b1e] rounded-lg border border-[#3f3f46] 
