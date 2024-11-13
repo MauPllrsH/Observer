@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import AnomalousIPs from "./AnomalousIPs.jsx";
 import AttackTimeline from "./AttackTimeline.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
@@ -39,6 +39,10 @@ const DashboardContent = () => {
             setLoading(true);
             const data = await fetchWithRetry(`${API_URL}/api/logs`);
 
+            if ('error' in data) {
+                throw new Error(data.error);
+            }
+
             if (!Array.isArray(data)) {
                 throw new Error('Invalid data format received');
             }
@@ -56,18 +60,36 @@ const DashboardContent = () => {
 
     useEffect(() => {
         let mounted = true;
-        let interval;
+        let interval = null;
 
         const startPolling = async () => {
             if (!mounted) return;
-            await fetchData();
 
-            if (mounted) {
-                interval = setInterval(fetchData, 5000);
+            try {
+                await fetchData();
+
+                if (mounted) {
+                    interval = setInterval(async () => {
+                        if (mounted) {
+                            try {
+                                await fetchData();
+                            } catch (error) {
+                                console.error('Polling error:', error);
+                            }
+                        }
+                    }, 5000);
+                }
+            } catch (error) {
+                console.error('Initial polling error:', error);
+                if (mounted) {
+                    setTimeout(startPolling, 5000);
+                }
             }
         };
 
-        startPolling();
+        startPolling().catch(error => {
+            console.error('Failed to start polling:', error);
+        });
 
         return () => {
             mounted = false;
@@ -77,13 +99,13 @@ const DashboardContent = () => {
         };
     }, [fetchData]);
 
-
     const handleRetry = useCallback(() => {
-        setIsPollingPaused(false);
-        setRetryCount(0);
         setLoading(true);
         setError(null);
-    }, []);
+        fetchData().catch(error => {
+            console.error('Retry failed:', error);
+        });
+    }, [fetchData]);
 
     if (loading && !logs.length) {
         return (
@@ -175,13 +197,13 @@ const DashboardContent = () => {
                                     {log.analysis_result?.matched_rules?.length > 0 && (
                                         <p className="text-[#a1a1a3]">
                                             <strong className="text-[#e1e1e3]">Matched Rules:</strong>
-                                            {log.analysis_result.matched_rules.join(', ')}
+                                            {' ' + log.analysis_result.matched_rules.join(', ')}
                                         </p>
                                     )}
                                     {log.analysis_result?.message && (
                                         <p className="text-[#a1a1a3]">
                                             <strong className="text-[#e1e1e3]">Message:</strong>
-                                            {log.analysis_result.message}
+                                            {' ' + log.analysis_result.message}
                                         </p>
                                     )}
                                 </div>
@@ -194,12 +216,10 @@ const DashboardContent = () => {
     );
 };
 
-const Dashboard = () => {
-    return (
-        <ErrorBoundary>
-            <DashboardContent />
-        </ErrorBoundary>
-    );
-};
+const Dashboard = () => (
+    <ErrorBoundary>
+        <DashboardContent />
+    </ErrorBoundary>
+);
 
 export default Dashboard;
