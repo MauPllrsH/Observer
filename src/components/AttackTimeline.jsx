@@ -1,38 +1,64 @@
 import React, { useState, useEffect } from 'react';
+import { logRequest } from '../utils/logging';
 
 const AttackTimeline = () => {
     const [timelineData, setTimelineData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [lastFetch, setLastFetch] = useState(null);
 
     useEffect(() => {
+        let mounted = true;
+        let interval = null;
+
         const fetchData = async () => {
             try {
+                logRequest('AttackTimeline', 'fetching data', { lastFetch });
                 const response = await fetch('http://157.245.249.219:5000/api/attack-timeline');
-                if (!response.ok) throw new Error('Failed to fetch timeline data');
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch timeline data');
+                }
+
                 const data = await response.json();
+                logRequest('AttackTimeline', 'received data', { count: data.length });
 
-                const processedData = data.map(entry => ({
-                    ...entry,
-                    formattedTime: new Date(entry.timestamp).toLocaleTimeString('en-US', {
-                        hour: 'numeric',
-                        minute: 'numeric',
-                        hour12: true
-                    })
-                }));
+                if (mounted) {
+                    const processedData = data.map(entry => ({
+                        ...entry,
+                        formattedTime: new Date(entry.timestamp).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true
+                        })
+                    }));
 
-                setTimelineData(processedData);
-                setError(null);
+                    setTimelineData(processedData);
+                    setLastFetch(new Date().toISOString());
+                    setError(null);
+                }
             } catch (err) {
-                setError(err.message);
+                logRequest('AttackTimeline', 'error', { error: err.message });
+                if (mounted) {
+                    setError(err.message);
+                }
             } finally {
-                setLoading(false);
+                if (mounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchData();
-        const interval = setInterval(fetchData, 5000);
-        return () => clearInterval(interval);
+        interval = setInterval(fetchData, 5000);
+
+        return () => {
+            logRequest('AttackTimeline', 'cleanup');
+            mounted = false;
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
     }, []);
 
     if (loading) return (

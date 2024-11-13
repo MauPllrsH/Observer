@@ -1,18 +1,21 @@
-import {useCallback, useEffect, useState} from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AnomalousIPs from "./AnomalousIPs.jsx";
 import AttackTimeline from "./AttackTimeline.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
+import { logRequest } from '../utils/logging';
 
 const API_URL = 'http://157.245.249.219:5000';
 
-const fetchWithRetry = async (url, maxRetries = 3) => {
+const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
     let attempt = 0;
     while (attempt < maxRetries) {
         try {
             const response = await fetch(url, {
                 headers: {
-                    'Accept': 'application/json'
-                }
+                    'Accept': 'application/json',
+                    ...options.headers
+                },
+                ...options
             });
 
             if (!response.ok) {
@@ -22,6 +25,7 @@ const fetchWithRetry = async (url, maxRetries = 3) => {
             return await response.json();
         } catch (error) {
             attempt++;
+            logRequest('fetchWithRetry', 'attempt failed', { attempt, error: error.message });
             if (attempt === maxRetries) throw error;
             await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
         }
@@ -33,11 +37,20 @@ const DashboardContent = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [lastUpdate, setLastUpdate] = useState(new Date().toLocaleString());
+    const [lastTimestamp, setLastTimestamp] = useState(null);
 
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const data = await fetchWithRetry(`${API_URL}/api/logs`);
+            logRequest('Dashboard', 'fetching logs', { lastTimestamp });
+
+            const url = new URL(`${API_URL}/api/logs`);
+            if (lastTimestamp) {
+                url.searchParams.append('since', lastTimestamp);
+            }
+
+            const data = await fetchWithRetry(url.toString());
+            logRequest('Dashboard', 'received logs', { count: data.length });
 
             if ('error' in data) {
                 throw new Error(data.error);
@@ -47,16 +60,42 @@ const DashboardContent = () => {
                 throw new Error('Invalid data format received');
             }
 
-            setLogs(data);
+            // Update logs and timestamp
+            setLogs(prevLogs => {
+                if (!lastTimestamp) return data;
+
+                // Merge new logs with existing logs
+                const newLogs = [...prevLogs];
+                data.forEach(log => {
+                    const index = newLogs.findIndex(l => l.timestamp === log.timestamp);
+                    if (index === -1) {
+                        newLogs.push(log);
+                    }
+                });
+
+                // Sort by timestamp descending
+                return newLogs.sort((a, b) =>
+                    new Date(b.timestamp) - new Date(a.timestamp)
+                ).slice(0, 100); // Keep only latest 100 logs
+            });
+
+            // Update last timestamp from the newest log
+            if (data.length > 0) {
+                const timestamps = data.map(log => new Date(log.timestamp));
+                const newestTimestamp = new Date(Math.max(...timestamps));
+                setLastTimestamp(newestTimestamp.toISOString());
+            }
+
             setLastUpdate(new Date().toLocaleString());
             setError(null);
         } catch (error) {
+            logRequest('Dashboard', 'error', { error: error.message });
             console.error('Error fetching logs:', error);
             setError(error.message);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [lastTimestamp]);
 
     useEffect(() => {
         let mounted = true;
@@ -74,13 +113,13 @@ const DashboardContent = () => {
                             try {
                                 await fetchData();
                             } catch (error) {
-                                console.error('Polling error:', error);
+                                logRequest('Dashboard', 'polling error', { error: error.message });
                             }
                         }
                     }, 5000);
                 }
             } catch (error) {
-                console.error('Initial polling error:', error);
+                logRequest('Dashboard', 'initial polling error', { error: error.message });
                 if (mounted) {
                     setTimeout(startPolling, 5000);
                 }
@@ -88,10 +127,11 @@ const DashboardContent = () => {
         };
 
         startPolling().catch(error => {
-            console.error('Failed to start polling:', error);
+            logRequest('Dashboard', 'polling start failed', { error: error.message });
         });
 
         return () => {
+            logRequest('Dashboard', 'cleanup');
             mounted = false;
             if (interval) {
                 clearInterval(interval);

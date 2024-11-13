@@ -1,28 +1,55 @@
 import React, { useState, useEffect } from 'react';
+import { logRequest } from '../utils/logging';
 
 const AnomalousIPs = () => {
     const [anomalousIPs, setAnomalousIPs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [lastFetch, setLastFetch] = useState(null);
 
     useEffect(() => {
+        let mounted = true;
+        let interval = null;
+
         const fetchAnomalousIPs = async () => {
             try {
+                logRequest('AnomalousIPs', 'fetching data', { lastFetch });
                 const response = await fetch('http://157.245.249.219:5000/api/anomalous-ips');
-                if (!response.ok) throw new Error('Failed to fetch anomalous IPs');
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch anomalous IPs');
+                }
+
                 const data = await response.json();
-                setAnomalousIPs(data);
-                setError(null);
+                logRequest('AnomalousIPs', 'received data', { count: data.length });
+
+                if (mounted) {
+                    setAnomalousIPs(data);
+                    setLastFetch(new Date().toISOString());
+                    setError(null);
+                }
             } catch (err) {
-                setError(err.message);
+                logRequest('AnomalousIPs', 'error', { error: err.message });
+                if (mounted) {
+                    setError(err.message);
+                }
             } finally {
-                setLoading(false);
+                if (mounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchAnomalousIPs();
-        const interval = setInterval(fetchAnomalousIPs, 5000);
-        return () => clearInterval(interval);
+        interval = setInterval(fetchAnomalousIPs, 5000);
+
+        return () => {
+            logRequest('AnomalousIPs', 'cleanup');
+            mounted = false;
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
     }, []);
 
     if (loading) return (
