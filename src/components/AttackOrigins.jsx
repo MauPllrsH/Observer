@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { logRequest } from '../utils/logging';
+import { ReactComponent as WorldMap } from '../assets/world-map.svg';
 
 const AttackOrigins = () => {
     const [attackData, setAttackData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedCountry, setSelectedCountry] = useState(null);
-    const svgRef = useRef(null);
 
     useEffect(() => {
         let mounted = true;
@@ -14,8 +14,12 @@ const AttackOrigins = () => {
 
         const fetchData = async () => {
             try {
+                logRequest('AttackOrigins', 'fetching data', {});
                 const response = await fetch('http://157.245.249.219:5000/api/attack-origins');
-                if (!response.ok) throw new Error('Failed to fetch attack origins');
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch attack origins');
+                }
 
                 const data = await response.json();
                 if (mounted) {
@@ -23,9 +27,13 @@ const AttackOrigins = () => {
                     setError(null);
                 }
             } catch (err) {
-                if (mounted) setError(err.message);
+                if (mounted) {
+                    setError(err.message);
+                }
             } finally {
-                if (mounted) setLoading(false);
+                if (mounted) {
+                    setLoading(false);
+                }
             }
         };
 
@@ -47,32 +55,39 @@ const AttackOrigins = () => {
         return `rgba(220, 38, 38, ${intensity * 0.8})`;
     };
 
-    useEffect(() => {
-        const svg = svgRef.current;
-        if (svg) {
-            const paths = svg.querySelectorAll('path');
-            paths.forEach(path => {
-                const countryName = path.getAttribute('name');
-                path.style.fill = getCountryColor(countryName);
+    if (loading) {
+        return (
+            <div style={{
+                backgroundColor: '#2c2d31',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
+                color: '#a1a1a3'
+            }}>
+                Loading attack map...
+            </div>
+        );
+    }
 
-                path.addEventListener('mouseenter', () => {
-                    const countryData = attackData.find(data => data.country === countryName);
-                    if (countryData) setSelectedCountry(countryData);
-                });
-
-                path.addEventListener('mouseleave', () => {
-                    setSelectedCountry(null);
-                });
-            });
-        }
-    }, [attackData]);
+    if (error) {
+        return (
+            <div style={{
+                backgroundColor: '#2c2d31',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
+                color: '#dc2626'
+            }}>
+                Error: {error}
+            </div>
+        );
+    }
 
     return (
         <div style={{
             backgroundColor: '#2c2d31',
             padding: '1.5rem',
             borderRadius: '0.5rem',
-            border: '1px solid #3f3f46'
+            border: '1px solid #3f3f46',
+            height: '400px'
         }}>
             <div style={{
                 display: 'flex',
@@ -92,18 +107,34 @@ const AttackOrigins = () => {
 
             <div style={{
                 position: 'relative',
+                height: 'calc(100% - 3rem)',
                 backgroundColor: '#1a1b1e',
-                borderRadius: '0.5rem',
-                padding: '1rem',
-                height: '400px'
+                borderRadius: '0.5rem'
             }}>
-                <object
-                    ref={svgRef}
-                    data="../assets/world-map.svg"
-                    type="image/svg+xml"
+                <WorldMap
                     style={{
                         width: '100%',
                         height: '100%'
+                    }}
+                    onLoad={(svg) => {
+                        // When SVG loads, set colors and event listeners for all countries
+                        const paths = svg.target.getElementsByTagName('path');
+                        Array.from(paths).forEach(path => {
+                            const countryName = path.getAttribute('name');
+                            path.style.fill = getCountryColor(countryName);
+                            path.style.stroke = '#3f3f46';
+                            path.style.strokeWidth = '0.2';
+                            path.style.cursor = 'pointer';
+
+                            path.addEventListener('mouseenter', () => {
+                                const countryData = attackData.find(data => data.country === countryName);
+                                if (countryData) setSelectedCountry(countryData);
+                            });
+
+                            path.addEventListener('mouseleave', () => {
+                                setSelectedCountry(null);
+                            });
+                        });
                     }}
                 />
 
