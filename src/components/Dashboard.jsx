@@ -180,15 +180,15 @@ const DashboardContent = () => {
             </div>
 
             {/* Component panels */}
-            <div className="flex gap-6 mb-6">
-                <div className="w-1/2">
+            <div className="component-grid">
+                <div>
                     <ErrorBoundary>
-                        <AnomalousIPs />
+                        <AnomalousIPs/>
                     </ErrorBoundary>
                 </div>
-                <div className="w-1/2">
+                <div>
                     <ErrorBoundary>
-                        <AttackTimeline />
+                        <AttackTimeline/>
                     </ErrorBoundary>
                 </div>
             </div>
@@ -258,7 +258,7 @@ const DashboardContent = () => {
 
 const Dashboard = () => (
     <ErrorBoundary>
-        <DashboardContent />
+        <DashboardContent/>
     </ErrorBoundary>
 );
 
