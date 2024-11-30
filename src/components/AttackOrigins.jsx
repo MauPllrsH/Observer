@@ -6,7 +6,7 @@ const AttackOrigins = () => {
     const [attackData, setAttackData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedPoint, setSelectedPoint] = useState(null);
+    const [selectedCountry, setSelectedCountry] = useState(null);
 
     useEffect(() => {
         let mounted = true;
@@ -46,23 +46,14 @@ const AttackOrigins = () => {
         };
     }, []);
 
-    // Convert lat/long to SVG coordinates
-    // These coordinates are specifically for the Natural Earth SVG projection
-    const latLongToXY = (lat, lng) => {
-        // SVG viewport dimensions
-        const mapWidth = 2000;
-        const mapHeight = 1001;
+    const getCountryColor = (countryName) => {
+        const countryData = attackData.find(data => data.country === countryName);
+        if (!countryData) return '#2c2d31'; // Default color for non-attacking countries
 
-        // Longitude to x coordinate
-        let x = (lng + 180) * (mapWidth / 360);
-
-        // Convert latitude to y coordinate using Mercator projection
-        let latRad = lat * Math.PI / 180;
-        // Following the Mercator projection formula
-        let mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
-        let y = (mapHeight / 2) - (mapWidth * mercN / (2 * Math.PI));
-
-        return [x, y];
+        // Calculate color intensity based on attack_count
+        const maxAttacks = Math.max(...attackData.map(d => d.attack_count));
+        const intensity = countryData.attack_count / maxAttacks;
+        return `rgba(220, 38, 38, ${intensity * 0.8})`; // Red with varying opacity
     };
 
     if (loading) {
@@ -122,64 +113,36 @@ const AttackOrigins = () => {
                 height: '400px'
             }}>
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                    <img
-                        src={worldMap}
-                        alt="World Map"
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            width: '100%',
-                            height: '100%',
-                            filter: 'invert(0.8) brightness(0.3)',
-                            zIndex: 1
-                        }}
-                    />
                     <svg
+                        viewBox="0 0 2000 1001"
                         style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
                             width: '100%',
                             height: '100%',
-                            zIndex: 2
                         }}
-                        viewBox="0 0 2000 1001"
-                        preserveAspectRatio="xMidYMid slice"
                     >
-                        {attackData.map((point, index) => {
-                            const [x, y] = latLongToXY(point.latitude, point.longitude);
-                            return (
-                                <g key={index}>
-                                    {/* Pulse animation */}
-                                    <circle
-                                        cx={x}
-                                        cy={y}
-                                        r="5"
-                                        fill="rgba(220, 38, 38, 0.3)"
-                                        style={{
-                                            animation: 'pulse 2s infinite',
-                                        }}
-                                    />
-                                    {/* Attack point */}
-                                    <circle
-                                        cx={x}
-                                        cy={y}
-                                        r="3"
-                                        fill="#dc2626"
-                                        stroke="#1a1b1e"
-                                        strokeWidth="1"
-                                        onMouseEnter={() => setSelectedPoint(point)}
-                                        onMouseLeave={() => setSelectedPoint(null)}
-                                        style={{ cursor: 'pointer' }}
-                                    />
-                                </g>
-                            );
-                        })}
+                        {/* Our map paths will go here */}
+                        {/* Each path should have its country's name as data attribute */}
+                        {Array.from(document.querySelectorAll('path')).map(path => (
+                            <path
+                                key={path.getAttribute('name')}
+                                d={path.getAttribute('d')}
+                                fill={getCountryColor(path.getAttribute('name'))}
+                                stroke="#3f3f46"
+                                strokeWidth="0.5"
+                                onMouseEnter={() => {
+                                    const countryData = attackData.find(
+                                        data => data.country === path.getAttribute('name')
+                                    );
+                                    if (countryData) setSelectedCountry(countryData);
+                                }}
+                                onMouseLeave={() => setSelectedCountry(null)}
+                                style={{ cursor: 'pointer' }}
+                            />
+                        ))}
                     </svg>
 
                     {/* Tooltip */}
-                    {selectedPoint && (
+                    {selectedCountry && (
                         <div style={{
                             position: 'absolute',
                             backgroundColor: '#2c2d31',
@@ -193,14 +156,14 @@ const AttackOrigins = () => {
                             boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                         }}>
                             <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                                {selectedPoint.country}
+                                {selectedCountry.country}
                             </div>
                             <div style={{ color: '#a1a1a3' }}>
-                                Attacks: {selectedPoint.attack_count}
+                                Attacks: {selectedCountry.attack_count}
                                 <br />
-                                Unique IPs: {selectedPoint.unique_ips}
+                                Unique IPs: {selectedCountry.unique_ips}
                                 <br />
-                                Last Attack: {new Date(selectedPoint.last_attack).toLocaleString()}
+                                Last Attack: {new Date(selectedCountry.last_attack).toLocaleString()}
                             </div>
                         </div>
                     )}
