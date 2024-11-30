@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import AnomalousIPs from "./AnomalousIPs.jsx";
 import AttackTimeline from "./AttackTimeline.jsx";
+import LogsPanel from "./LogsPanel.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import { logRequest } from '../utils/logging';
 
@@ -149,28 +150,66 @@ const DashboardContent = () => {
 
     if (loading && !logs.length) {
         return (
-            <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
-                <div className="flex items-center justify-center p-4">
-                    <div className="animate-spin mr-2">⟳</div> Loading...
+            <div style={{
+                minHeight: '100vh',
+                padding: '1.5rem',
+                backgroundColor: '#1a1b1e',
+                color: '#e1e1e3'
+            }}>
+                <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1rem'
+                }}>
+                    <div style={{ marginRight: '0.5rem', animation: 'spin 1s linear infinite' }}>⟳</div>
+                    Loading...
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
+        <div style={{
+            minHeight: '100vh',
+            padding: '1.5rem',
+            backgroundColor: '#1a1b1e',
+            color: '#e1e1e3'
+        }}>
             {/* Status Bar */}
-            <div className="mb-6 p-4 bg-[#2c2d31] rounded-lg border border-[#3f3f46]">
-                <p className="text-[#a1a1a3]">Last updated: {lastUpdate}</p>
-                <p className="text-[#a1a1a3]">Logs loaded: {logs.length}</p>
-                {loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
+            <div style={{
+                marginBottom: '1.5rem',
+                padding: '1rem',
+                backgroundColor: '#2c2d31',
+                borderRadius: '0.5rem',
+                border: '1px solid #3f3f46'
+            }}>
+                <div style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>Last updated: {lastUpdate}</div>
+                <div style={{ color: '#a1a1a3' }}>Logs loaded: {logs.length}</div>
+                {loading && <div style={{ color: '#a1a1a3' }}>Refreshing...</div>}
                 {error && (
-                    <div className="mt-2 p-2 bg-red-900/20 rounded border border-red-700">
-                        <div className="text-red-400 flex items-center justify-between">
+                    <div style={{
+                        marginTop: '0.5rem',
+                        padding: '0.5rem',
+                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                        borderRadius: '0.5rem',
+                        border: '1px solid #dc2626'
+                    }}>
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            color: '#dc2626'
+                        }}>
                             <span>Error: {error}</span>
                             <button
                                 onClick={handleRetry}
-                                className="px-3 py-1 bg-red-900/30 rounded hover:bg-red-900/50 transition-colors"
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    backgroundColor: 'rgba(220, 38, 38, 0.2)',
+                                    borderRadius: '0.25rem',
+                                    cursor: 'pointer'
+                                }}
                             >
                                 Retry Now
                             </button>
@@ -179,86 +218,32 @@ const DashboardContent = () => {
                 )}
             </div>
 
-            {/* Component panels */}
-            <div className="component-grid">
-                <div>
-                    <ErrorBoundary>
-                        <AnomalousIPs/>
-                    </ErrorBoundary>
-                </div>
-                <div>
-                    <ErrorBoundary>
-                        <AttackTimeline/>
-                    </ErrorBoundary>
-                </div>
+            {/* Component Grid */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '1.5rem',
+                marginBottom: '1.5rem'
+            }}>
+                <ErrorBoundary>
+                    <AnomalousIPs />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                    <AttackTimeline />
+                </ErrorBoundary>
             </div>
 
-            {/* Logs panel */}
-            <div className="bg-[#2c2d31] rounded-lg border border-[#3f3f46] p-6">
-                <h2 className="text-2xl mb-4">Recent Logs</h2>
-                {logs.length === 0 ? (
-                    <p className="text-[#a1a1a3]">No logs found</p>
-                ) : (
-                    <div className="space-y-2">
-                        {logs.map((log, index) => (
-                            <div
-                                key={index}
-                                className={`bg-[#1a1b1e] rounded-lg border border-[#3f3f46] 
-                                    ${log.analysis_result?.injection_detected
-                                    ? 'border-l-4 border-l-red-600'
-                                    : 'border-l-4 border-l-green-500'}`}
-                            >
-                                <div className="p-3 flex justify-between items-center border-b border-[#3f3f46]">
-                                    <span className="text-sm text-[#a1a1a3]">
-                                        {log.timestamp}
-                                    </span>
-                                    <span className={`px-3 py-1 rounded-full text-sm
-                                        ${log.analysis_result?.injection_detected
-                                        ? 'bg-red-600/10 text-red-600'
-                                        : 'bg-green-500/10 text-green-500'}`}>
-                                        {log.analysis_result?.injection_detected ? '⚠️ Attack Detected' : '✅ Normal'}
-                                    </span>
-                                </div>
-                                <div className="p-3 space-y-2">
-                                    <p className="text-[#a1a1a3]">
-                                        <strong className="text-[#e1e1e3]">Method:</strong> {log.method}
-                                    </p>
-                                    <p className="text-[#a1a1a3]">
-                                        <strong className="text-[#e1e1e3]">Path:</strong> {log.path}
-                                    </p>
-                                    {log.query && (
-                                        <p className="text-[#a1a1a3]">
-                                            <strong className="text-[#e1e1e3]">Query:</strong> {log.query}
-                                        </p>
-                                    )}
-                                    <p className="text-[#a1a1a3]">
-                                        <strong className="text-[#e1e1e3]">IP:</strong> {log.ip}
-                                    </p>
-                                    {log.analysis_result?.matched_rules?.length > 0 && (
-                                        <p className="text-[#a1a1a3]">
-                                            <strong className="text-[#e1e1e3]">Matched Rules:</strong>
-                                            {' ' + log.analysis_result.matched_rules.join(', ')}
-                                        </p>
-                                    )}
-                                    {log.analysis_result?.message && (
-                                        <p className="text-[#a1a1a3]">
-                                            <strong className="text-[#e1e1e3]">Message:</strong>
-                                            {' ' + log.analysis_result.message}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </div>
+            {/* Logs Panel */}
+            <ErrorBoundary>
+                <LogsPanel logs={logs} loading={loading} />
+            </ErrorBoundary>
         </div>
     );
 };
 
 const Dashboard = () => (
     <ErrorBoundary>
-        <DashboardContent/>
+        <DashboardContent />
     </ErrorBoundary>
 );
 
