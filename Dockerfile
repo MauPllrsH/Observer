@@ -12,9 +12,8 @@ RUN addgroup -g 1001 appgroup && \
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with specific NPM settings to avoid permission issues
-RUN npm config set unsafe-perm true && \
-    npm install && \
+# Install dependencies with proper permissions
+RUN npm install --legacy-peer-deps && \
     mkdir -p node_modules/.vite && \
     mkdir -p .vite && \
     chown -R appuser:appgroup /app && \
