@@ -4,6 +4,7 @@ import AttackTimeline from "./AttackTimeline.jsx";
 import LogsPanel from "./LogsPanel.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import { logRequest } from '../utils/logging';
+import AttackOrigins from "./AttackOrigins.jsx";
 
 const API_URL = 'http://157.245.249.219:5000';
 
@@ -233,10 +234,19 @@ const DashboardContent = () => {
                 </ErrorBoundary>
             </div>
 
-            {/* Logs Panel */}
-            <ErrorBoundary>
-                <LogsPanel logs={logs} loading={loading} />
-            </ErrorBoundary>
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '1.5rem',
+                marginBottom: '1.5rem'
+            }}>
+                <ErrorBoundary>
+                    <AttackOrigins />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                    <LogsPanel logs={logs} loading={loading} />
+                </ErrorBoundary>
+            </div>
         </div>
     );
 };
