@@ -2,6 +2,9 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Add necessary build tools for node-gyp
+RUN apk add --no-cache python3 make g++ git
+
 # Add user
 RUN addgroup -g 1001 appgroup && \
     adduser -D -u 1001 -G appgroup appuser
@@ -9,8 +12,9 @@ RUN addgroup -g 1001 appgroup && \
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies and set up directories
-RUN npm install && \
+# Install dependencies with specific NPM settings to avoid permission issues
+RUN npm config set unsafe-perm true && \
+    npm install && \
     mkdir -p node_modules/.vite && \
     mkdir -p .vite && \
     chown -R appuser:appgroup /app && \
