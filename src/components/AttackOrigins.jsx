@@ -48,14 +48,19 @@ const AttackOrigins = () => {
 
     // Convert lat/long to SVG coordinates
     // These coordinates are specifically for the Natural Earth SVG projection
-    const latLongToXY = (lat, long) => {
-        // The viewBox of the Natural Earth SVG is typically "0 0 2000 1001"
+    const latLongToXY = (lat, lng) => {
+        // SVG viewport dimensions
         const mapWidth = 2000;
         const mapHeight = 1001;
 
-        // Convert the coordinates using the Mercator projection
-        const x = (long + 180) * (mapWidth / 360);
-        const y = (mapHeight / 2) - (mapWidth * Math.log(Math.tan((Math.PI / 4) + (lat * Math.PI / 360))) / (2 * Math.PI));
+        // Longitude to x coordinate
+        let x = (lng + 180) * (mapWidth / 360);
+
+        // Convert latitude to y coordinate using Mercator projection
+        let latRad = lat * Math.PI / 180;
+        // Following the Mercator projection formula
+        let mercN = Math.log(Math.tan((Math.PI / 4) + (latRad / 2)));
+        let y = (mapHeight / 2) - (mapWidth * mercN / (2 * Math.PI));
 
         return [x, y];
     };
