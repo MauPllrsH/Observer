@@ -13,7 +13,8 @@ RUN addgroup -g 1001 appgroup && \
 COPY package*.json ./
 
 # Install dependencies with proper permissions
-RUN npm cache clean --force && \
+RUN npm install --save-dev vite-plugin-svgr && \
+    npm cache clean --force && \
     npm install --legacy-peer-deps && \
     mkdir -p node_modules/.vite && \
     mkdir -p .vite && \
