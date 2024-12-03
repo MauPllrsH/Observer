@@ -8,30 +8,49 @@ const AttackOrigins = () => {
     const [error, setError] = useState(null);
     const [selectedCountry, setSelectedCountry] = useState(null);
 
-    const updateMapColors = (svg, data) => {
-        console.log('Updating map colors', { svg, dataLength: data.length });
+    // Create country code mapping
+    const countryMapping = {
+        'US': 'United States',
+        'KR': 'South Korea',
+        'LT': 'Lithuania',
+        'NL': 'Netherlands',
+        'CN': 'China',
+        'GB': 'United Kingdom',
+        'DE': 'Germany',
+        'FR': 'France',
+        'IN': 'India',
+        'BR': 'Brazil',
+        'RU': 'Russia',
+        'JP': 'Japan',
+        'CA': 'Canada',
+        'AU': 'Australia',
+        'IT': 'Italy'
+        // Add more as needed
+    };
 
-        // Get all path elements from the SVG
-        const paths = svg.target?.querySelectorAll('path');
-        console.log('Found paths:', paths?.length);
+    const updateMapColors = (svg, data) => {
         console.log('Attack Data countries:', data.map(d => d.country));
 
-        if (!paths) return;
+        // Make sure we're getting the SVG element
+        const svgElement = svg.target.querySelector('svg') || svg.target;
+        console.log('SVG element found:', !!svgElement);
 
-        paths.forEach(path => {
-            const countryName = path.getAttribute('name')
-            const countryId = path.getAttribute('id');
-            console.log('SVG Path:', { id: countryId, name: countryName });;
-            console.log('Processing country:', countryName);
+        const paths = svgElement.getElementsByTagName('path');
+        console.log('Number of paths:', paths.length);
 
-            // Find matching country data
+        Array.from(paths).forEach(path => {
+            const countryCode = path.getAttribute('id');
+            const mappedCountry = countryMapping[countryCode];
+
+            console.log('Processing path:', { countryCode, mappedCountry });
+
             const countryData = data.find(d =>
-                d.country?.toLowerCase() === countryName?.toLowerCase()
+                d.country === mappedCountry ||
+                d.country === countryCode
             );
 
-
             if (countryData) {
-                console.log('Found attack data for:', countryName, countryData);
+                console.log('Found matching data for:', mappedCountry || countryCode);
                 const maxAttacks = Math.max(...data.map(d => d.attack_count));
                 const intensity = countryData.attack_count / maxAttacks;
                 path.setAttribute('fill', `rgba(220, 38, 38, ${intensity * 0.8})`);
@@ -43,23 +62,19 @@ const AttackOrigins = () => {
             path.setAttribute('stroke-width', '0.2');
             path.style.cursor = 'pointer';
 
-            // Remove existing event listeners before adding new ones
-            const mouseEnter = () => {
+            // Add hover events
+            const handleMouseEnter = () => {
                 if (countryData) {
-                    console.log('Mouse enter:', countryName);
                     setSelectedCountry(countryData);
                 }
             };
 
-            const mouseLeave = () => {
-                console.log('Mouse leave:', countryName);
+            const handleMouseLeave = () => {
                 setSelectedCountry(null);
             };
 
-            path.removeEventListener('mouseenter', mouseEnter);
-            path.removeEventListener('mouseleave', mouseLeave);
-            path.addEventListener('mouseenter', mouseEnter);
-            path.addEventListener('mouseleave', mouseLeave);
+            path.addEventListener('mouseenter', handleMouseEnter);
+            path.addEventListener('mouseleave', handleMouseLeave);
         });
     };
 
@@ -111,6 +126,32 @@ const AttackOrigins = () => {
         };
     }, []);
 
+    if (loading) {
+        return (
+            <div style={{
+                backgroundColor: '#2c2d31',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
+                color: '#a1a1a3'
+            }}>
+                Loading attack map...
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div style={{
+                backgroundColor: '#2c2d31',
+                padding: '1.5rem',
+                borderRadius: '0.5rem',
+                color: '#dc2626'
+            }}>
+                Error: {error}
+            </div>
+        );
+    }
+
     return (
         <div style={{
             backgroundColor: '#2c2d31',
@@ -131,8 +172,8 @@ const AttackOrigins = () => {
                     margin: 0
                 }}>Global Attack Map</h2>
                 <span style={{ color: '#a1a1a3', fontSize: '0.875rem' }}>
-                    {attackData.length} Active Threats
-                </span>
+                   {attackData.length} Active Threats
+               </span>
             </div>
 
             <div style={{
@@ -146,10 +187,7 @@ const AttackOrigins = () => {
                         width: '100%',
                         height: '100%'
                     }}
-                    onLoad={(svg) => {
-                        console.log('SVG loaded');
-                        updateMapColors(svg, attackData);
-                    }}
+                    onLoad={(svg) => updateMapColors(svg, attackData)}
                 />
 
                 {selectedCountry && (
