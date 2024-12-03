@@ -6,7 +6,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const minLoadingTime = 2000; // 2 seconds
+        const minLoadingTime = 3000; // 2 seconds
         const startTime = Date.now();
 
         const initializeApp = async () => {
