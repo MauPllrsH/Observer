@@ -1,7 +1,7 @@
 $background: #1a1b1e; // Using your theme background
-$leftFace: #D53A33;
-$rightFace: #E79C10;
-$topFace: #1d9099;
+$leftFace: var(--text-primary);
+$rightFace: var(--attack-color);
+$topFace: var(--normal-color);
 $scale: 1;
 $duration: 3s;
 $timingFunction: ease;
@@ -23,7 +23,7 @@ $timingFunction: ease;
 
   h2 {
     color: #e1e1e3;
-    margin-top: 2rem;
+    margin-top: 6rem;
   }
 }
 
