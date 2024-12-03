@@ -14,17 +14,21 @@ const AttackOrigins = () => {
         // Get all path elements from the SVG
         const paths = svg.target?.querySelectorAll('path');
         console.log('Found paths:', paths?.length);
+        console.log('Attack Data countries:', data.map(d => d.country));
 
         if (!paths) return;
 
         paths.forEach(path => {
-            const countryName = path.getAttribute('name');
+            const countryName = path.getAttribute('name')
+            const countryId = path.getAttribute('id');
+            console.log('SVG Path:', { id: countryId, name: countryName });;
             console.log('Processing country:', countryName);
 
             // Find matching country data
             const countryData = data.find(d =>
                 d.country?.toLowerCase() === countryName?.toLowerCase()
             );
+
 
             if (countryData) {
                 console.log('Found attack data for:', countryName, countryData);
