@@ -152,29 +152,5 @@ code, pre {
 }
 
 
-/* Loading Screen and Cube Styles */
-.loading-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: var(--bg-primary);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  margin: 0;
-  padding: 0;
-}
 
-.loading-screen.fade-out {
-  opacity: 0;
-}
-
-.loading-screen h2 {
-  color: var(--text-primary);
-  margin-top: 2rem;
-}
 
