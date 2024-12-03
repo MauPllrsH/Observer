@@ -11,6 +11,9 @@
   --attack-bg: rgba(220, 38, 38, 0.1);
   --normal-color: #22c55e;
   --normal-bg: rgba(34, 197, 94, 0.1);
+  --cube-left: #D53A33;
+  --cube-right: #E79C10;
+  --cube-top: #1d9099;
 }
 
 * {
@@ -146,4 +149,140 @@ code, pre {
   width: 100%;
   height: 400px;
   margin-top: 1rem;
+}
+
+
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  opacity: 1;
+  transition: opacity 0.5s ease-out;
+}
+
+.loading-screen.fade-out {
+  opacity: 0;
+}
+
+.loading-screen h2 {
+  color: var(--text-primary);
+  margin-top: 2rem;
+}
+
+/*////////////////////////////////////////////////
+/* Cube Animation Styles */
+.container {
+  position: relative;
+  height: 100px;
+  width: 86px;
+  transform: scale(0.5);
+}
+
+.cube {
+  position: absolute;
+  width: 86px;
+  height: 100px;
+}
+
+.face {
+  height: 50px;
+  width: 50px;
+  position: absolute;
+  transform-origin: 0 0;
+}
+
+.right {
+  background: var(--cube-right);
+  transform: rotate(-30deg) skewX(-30deg) translate(49px, 65px) scaleY(0.86);
+}
+
+.left {
+  background: var(--cube-left);
+  transform: rotate(90deg) skewX(-30deg) scaleY(0.86) translate(25px, -50px);
+}
+
+.top {
+  background: var(--cube-top);
+  transform: rotate(210deg) skew(-30deg) translate(-75px, -22px) scaleY(0.86);
+  z-index: 2;
+}
+
+/* Generated Animation Keyframes */
+@keyframes h1w1l1 { 0% { transform: translate(-100%, -150%) } 14% { transform: translate(-100%, -175%) } 28% { transform: translate(-150%, -175%) } 43% { transform: translate(-200%, -300%) } 57% { transform: translate(-200%, -250%) } 71% { transform: translate(-250%, -225%) } 85%, 100% { transform: translate(-100%, -150%) } }
+@keyframes h1w1l2 { 0% { transform: translate(-50%, -150%) } 14% { transform: translate(-50%, -175%) } 28% { transform: translate(-100%, -175%) } 43% { transform: translate(-150%, -300%) } 57% { transform: translate(-150%, -250%) } 71% { transform: translate(-200%, -225%) } 85%, 100% { transform: translate(-50%, -150%) } }
+@keyframes h1w1l3 { 0% { transform: translate(0%, -150%) } 14% { transform: translate(0%, -175%) } 28% { transform: translate(-50%, -175%) } 43% { transform: translate(-100%, -300%) } 57% { transform: translate(-100%, -250%) } 71% { transform: translate(-150%, -225%) } 85%, 100% { transform: translate(0%, -150%) } }
+
+@keyframes h1w2l1 { 0% { transform: translate(-100%, -125%) } 14% { transform: translate(-100%, -150%) } 28% { transform: translate(-150%, -150%) } 43% { transform: translate(-200%, -275%) } 57% { transform: translate(-200%, -225%) } 71% { transform: translate(-250%, -200%) } 85%, 100% { transform: translate(-100%, -125%) } }
+@keyframes h1w2l2 { 0% { transform: translate(-50%, -125%) } 14% { transform: translate(-50%, -150%) } 28% { transform: translate(-100%, -150%) } 43% { transform: translate(-150%, -275%) } 57% { transform: translate(-150%, -225%) } 71% { transform: translate(-200%, -200%) } 85%, 100% { transform: translate(-50%, -125%) } }
+@keyframes h1w2l3 { 0% { transform: translate(0%, -125%) } 14% { transform: translate(0%, -150%) } 28% { transform: translate(-50%, -150%) } 43% { transform: translate(-100%, -275%) } 57% { transform: translate(-100%, -225%) } 71% { transform: translate(-150%, -200%) } 85%, 100% { transform: translate(0%, -125%) } }
+
+@keyframes h1w3l1 { 0% { transform: translate(-100%, -100%) } 14% { transform: translate(-100%, -125%) } 28% { transform: translate(-150%, -125%) } 43% { transform: translate(-200%, -250%) } 57% { transform: translate(-200%, -200%) } 71% { transform: translate(-250%, -175%) } 85%, 100% { transform: translate(-100%, -100%) } }
+@keyframes h1w3l2 { 0% { transform: translate(-50%, -100%) } 14% { transform: translate(-50%, -125%) } 28% { transform: translate(-100%, -125%) } 43% { transform: translate(-150%, -250%) } 57% { transform: translate(-150%, -200%) } 71% { transform: translate(-200%, -175%) } 85%, 100% { transform: translate(-50%, -100%) } }
+@keyframes h1w3l3 { 0% { transform: translate(0%, -100%) } 14% { transform: translate(0%, -125%) } 28% { transform: translate(-50%, -125%) } 43% { transform: translate(-100%, -250%) } 57% { transform: translate(-100%, -200%) } 71% { transform: translate(-150%, -175%) } 85%, 100% { transform: translate(0%, -100%) } }
+
+/* H2 Animations */
+@keyframes h2w1l1 { 0% { transform: translate(-100%, -100%) } 14% { transform: translate(-100%, -125%) } 28% { transform: translate(-150%, -125%) } 43% { transform: translate(-200%, -250%) } 57% { transform: translate(-200%, -200%) } 71% { transform: translate(-250%, -175%) } 85%, 100% { transform: translate(-100%, -100%) } }
+@keyframes h2w1l2 { 0% { transform: translate(-50%, -100%) } 14% { transform: translate(-50%, -125%) } 28% { transform: translate(-100%, -125%) } 43% { transform: translate(-150%, -250%) } 57% { transform: translate(-150%, -200%) } 71% { transform: translate(-200%, -175%) } 85%, 100% { transform: translate(-50%, -100%) } }
+@keyframes h2w1l3 { 0% { transform: translate(0%, -100%) } 14% { transform: translate(0%, -125%) } 28% { transform: translate(-50%, -125%) } 43% { transform: translate(-100%, -250%) } 57% { transform: translate(-100%, -200%) } 71% { transform: translate(-150%, -175%) } 85%, 100% { transform: translate(0%, -100%) } }
+
+@keyframes h2w2l1 { 0% { transform: translate(-100%, -75%) } 14% { transform: translate(-100%, -100%) } 28% { transform: translate(-150%, -100%) } 43% { transform: translate(-200%, -225%) } 57% { transform: translate(-200%, -175%) } 71% { transform: translate(-250%, -150%) } 85%, 100% { transform: translate(-100%, -75%) } }
+@keyframes h2w2l2 { 0% { transform: translate(-50%, -75%) } 14% { transform: translate(-50%, -100%) } 28% { transform: translate(-100%, -100%) } 43% { transform: translate(-150%, -225%) } 57% { transform: translate(-150%, -175%) } 71% { transform: translate(-200%, -150%) } 85%, 100% { transform: translate(-50%, -75%) } }
+@keyframes h2w2l3 { 0% { transform: translate(0%, -75%) } 14% { transform: translate(0%, -100%) } 28% { transform: translate(-50%, -100%) } 43% { transform: translate(-100%, -225%) } 57% { transform: translate(-100%, -175%) } 71% { transform: translate(-150%, -150%) } 85%, 100% { transform: translate(0%, -75%) } }
+
+@keyframes h2w3l1 { 0% { transform: translate(-100%, -50%) } 14% { transform: translate(-100%, -75%) } 28% { transform: translate(-150%, -75%) } 43% { transform: translate(-200%, -200%) } 57% { transform: translate(-200%, -150%) } 71% { transform: translate(-250%, -125%) } 85%, 100% { transform: translate(-100%, -50%) } }
+@keyframes h2w3l2 { 0% { transform: translate(-50%, -50%) } 14% { transform: translate(-50%, -75%) } 28% { transform: translate(-100%, -75%) } 43% { transform: translate(-150%, -200%) } 57% { transform: translate(-150%, -150%) } 71% { transform: translate(-200%, -125%) } 85%, 100% { transform: translate(-50%, -50%) } }
+@keyframes h2w3l3 { 0% { transform: translate(0%, -50%) } 14% { transform: translate(0%, -75%) } 28% { transform: translate(-50%, -75%) } 43% { transform: translate(-100%, -200%) } 57% { transform: translate(-100%, -150%) } 71% { transform: translate(-150%, -125%) } 85%, 100% { transform: translate(0%, -50%) } }
+
+/* H3 Animations */
+@keyframes h3w1l1 { 0% { transform: translate(-100%, -50%) } 14% { transform: translate(-100%, -75%) } 28% { transform: translate(-150%, -75%) } 43% { transform: translate(-200%, -200%) } 57% { transform: translate(-200%, -150%) } 71% { transform: translate(-250%, -125%) } 85%, 100% { transform: translate(-100%, -50%) } }
+@keyframes h3w1l2 { 0% { transform: translate(-50%, -50%) } 14% { transform: translate(-50%, -75%) } 28% { transform: translate(-100%, -75%) } 43% { transform: translate(-150%, -200%) } 57% { transform: translate(-150%, -150%) } 71% { transform: translate(-200%, -125%) } 85%, 100% { transform: translate(-50%, -50%) } }
+@keyframes h3w1l3 { 0% { transform: translate(0%, -50%) } 14% { transform: translate(0%, -75%) } 28% { transform: translate(-50%, -75%) } 43% { transform: translate(-100%, -200%) } 57% { transform: translate(-100%, -150%) } 71% { transform: translate(-150%, -125%) } 85%, 100% { transform: translate(0%, -50%) } }
+
+@keyframes h3w2l1 { 0% { transform: translate(-100%, -25%) } 14% { transform: translate(-100%, -50%) } 28% { transform: translate(-150%, -50%) } 43% { transform: translate(-200%, -175%) } 57% { transform: translate(-200%, -125%) } 71% { transform: translate(-250%, -100%) } 85%, 100% { transform: translate(-100%, -25%) } }
+@keyframes h3w2l2 { 0% { transform: translate(-50%, -25%) } 14% { transform: translate(-50%, -50%) } 28% { transform: translate(-100%, -50%) } 43% { transform: translate(-150%, -175%) } 57% { transform: translate(-150%, -125%) } 71% { transform: translate(-200%, -100%) } 85%, 100% { transform: translate(-50%, -25%) } }
+@keyframes h3w2l3 { 0% { transform: translate(0%, -25%) } 14% { transform: translate(0%, -50%) } 28% { transform: translate(-50%, -50%) } 43% { transform: translate(-100%, -175%) } 57% { transform: translate(-100%, -125%) } 71% { transform: translate(-150%, -100%) } 85%, 100% { transform: translate(0%, -25%) } }
+
+@keyframes h3w3l1 { 0% { transform: translate(-100%, 0%) } 14% { transform: translate(-100%, -25%) } 28% { transform: translate(-150%, -25%) } 43% { transform: translate(-200%, -150%) } 57% { transform: translate(-200%, -100%) } 71% { transform: translate(-250%, -75%) } 85%, 100% { transform: translate(-100%, 0%) } }
+@keyframes h3w3l2 { 0% { transform: translate(-50%, 0%) } 14% { transform: translate(-50%, -25%) } 28% { transform: translate(-100%, -25%) } 43% { transform: translate(-150%, -150%) } 57% { transform: translate(-150%, -100%) } 71% { transform: translate(-200%, -75%) } 85%, 100% { transform: translate(-50%, 0%) } }
+@keyframes h3w3l3 { 0% { transform: translate(0%, 0%) } 14% { transform: translate(0%, -25%) } 28% { transform: translate(-50%, -25%) } 43% { transform: translate(-100%, -150%) } 57% { transform: translate(-100%, -100%) } 71% { transform: translate(-150%, -75%) } 85%, 100% { transform: translate(0%, 0%) } }
+
+/* Animation Assignments for H2 */
+.h2.w1.l1 { animation: h2w1l1 3s ease infinite; }
+.h2.w1.l2 { animation: h2w1l2 3s ease infinite; }
+.h2.w1.l3 { animation: h2w1l3 3s ease infinite; }
+.h2.w2.l1 { animation: h2w2l1 3s ease infinite; }
+.h2.w2.l2 { animation: h2w2l2 3s ease infinite; }
+.h2.w2.l3 { animation: h2w2l3 3s ease infinite; }
+.h2.w3.l1 { animation: h2w3l1 3s ease infinite; }
+.h2.w3.l2 { animation: h2w3l2 3s ease infinite; }
+.h2.w3.l3 { animation: h2w3l3 3s ease infinite; }
+
+/* Animation Assignments for H3 */
+.h3.w1.l1 { animation: h3w1l1 3s ease infinite; }
+.h3.w1.l2 { animation: h3w1l2 3s ease infinite; }
+.h3.w1.l3 { animation: h3w1l3 3s ease infinite; }
+.h3.w2.l1 { animation: h3w2l1 3s ease infinite; }
+.h3.w2.l2 { animation: h3w2l2 3s ease infinite; }
+.h3.w2.l3 { animation: h3w2l3 3s ease infinite; }
+.h3.w3.l1 { animation: h3w3l1 3s ease infinite; }
+.h3.w3.l2 { animation: h3w3l2 3s ease infinite; }
+.h3.w3.l3 { animation: h3w3l3 3s ease infinite; }
+
+/* Add fade-in animation for the dashboard */
+.app {
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
