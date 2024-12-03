@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { logRequest } from '../utils/logging';
-import { ReactComponent as WorldMap } from '../assets/world-map.svg';
+import WorldMap from '../assets/world-map.svg';
 
 const AttackOrigins = () => {
     const [attackData, setAttackData] = useState([]);
