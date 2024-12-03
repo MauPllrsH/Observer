@@ -152,6 +152,7 @@ code, pre {
 }
 
 
+/* Loading Screen and Cube Styles */
 .loading-screen {
   position: fixed;
   top: 0;
@@ -177,49 +178,58 @@ code, pre {
   margin-top: 2rem;
 }
 
-/*////////////////////////////////////////////////
-/* Cube Animation Styles */
+/* Cube Base Styles */
 .container {
   position: relative;
   height: 100px;
-  width: 100px;
+  width: 86px;
   transform: scale(0.5);
 }
 
 .cube {
   position: absolute;
-  width: 100px;
+  width: 86px;
   height: 100px;
   z-index: calc(-1 * var(--cube-height, 1));
 }
 
 .face {
-  height: 100px;
-  width: 100px;
+  height: 50px;
+  width: 50px;
   position: absolute;
   transform-origin: 0 0;
 }
 
+/* Height levels */
 .h1 { --cube-height: 1; }
 .h2 { --cube-height: 2; }
 .h3 { --cube-height: 3; }
 
+/* Cube faces */
 .right {
   background: var(--cube-right);
-  transform: rotate(-30deg) skewX(-30deg) translate(50px, 50px) scaleY(0.86);
+  transform: rotate(-30deg) skewX(-30deg) translate(49px, 65px) scaleY(0.86);
 }
 
 .left {
   background: var(--cube-left);
-  transform: rotate(90deg) skewX(-30deg) scaleY(0.86) translate(50px, -50px);
+  transform: rotate(90deg) skewX(-30deg) scaleY(0.86) translate(25px, -50px);
 }
 
 .top {
   background: var(--cube-top);
-  transform: rotate(210deg) skew(-30deg) translate(-50px, 0) scaleY(0.86);
+  transform: rotate(210deg) skew(-30deg) translate(-75px, -22px) scaleY(0.86);
   z-index: 2;
 }
-/* Generated Animation Keyframes */
+
+/* Base animation properties */
+.cube {
+  animation-duration: 3s;
+  animation-timing-function: ease;
+  animation-iteration-count: infinite;
+}
+
+/* Animation Keyframes */
 @keyframes h1w1l1 { 0% { transform: translate(-100%, -150%) } 14% { transform: translate(-100%, -175%) } 28% { transform: translate(-150%, -175%) } 43% { transform: translate(-200%, -300%) } 57% { transform: translate(-200%, -250%) } 71% { transform: translate(-250%, -225%) } 85%, 100% { transform: translate(-100%, -150%) } }
 @keyframes h1w1l2 { 0% { transform: translate(-50%, -150%) } 14% { transform: translate(-50%, -175%) } 28% { transform: translate(-100%, -175%) } 43% { transform: translate(-150%, -300%) } 57% { transform: translate(-150%, -250%) } 71% { transform: translate(-200%, -225%) } 85%, 100% { transform: translate(-50%, -150%) } }
 @keyframes h1w1l3 { 0% { transform: translate(0%, -150%) } 14% { transform: translate(0%, -175%) } 28% { transform: translate(-50%, -175%) } 43% { transform: translate(-100%, -300%) } 57% { transform: translate(-100%, -250%) } 71% { transform: translate(-150%, -225%) } 85%, 100% { transform: translate(0%, -150%) } }
@@ -258,53 +268,38 @@ code, pre {
 @keyframes h3w3l2 { 0% { transform: translate(-50%, 0%) } 14% { transform: translate(-50%, -25%) } 28% { transform: translate(-100%, -25%) } 43% { transform: translate(-150%, -150%) } 57% { transform: translate(-150%, -100%) } 71% { transform: translate(-200%, -75%) } 85%, 100% { transform: translate(-50%, 0%) } }
 @keyframes h3w3l3 { 0% { transform: translate(0%, 0%) } 14% { transform: translate(0%, -25%) } 28% { transform: translate(-50%, -25%) } 43% { transform: translate(-100%, -150%) } 57% { transform: translate(-100%, -100%) } 71% { transform: translate(-150%, -75%) } 85%, 100% { transform: translate(0%, 0%) } }
 
-/* Animation Assignments for H2 */
-.h2.w1.l1 { animation: h2w1l1 3s ease infinite; }
-.h2.w1.l2 { animation: h2w1l2 3s ease infinite; }
-.h2.w1.l3 { animation: h2w1l3 3s ease infinite; }
-.h2.w2.l1 { animation: h2w2l1 3s ease infinite; }
-.h2.w2.l2 { animation: h2w2l2 3s ease infinite; }
-.h2.w2.l3 { animation: h2w2l3 3s ease infinite; }
-.h2.w3.l1 { animation: h2w3l1 3s ease infinite; }
-.h2.w3.l2 { animation: h2w3l2 3s ease infinite; }
-.h2.w3.l3 { animation: h2w3l3 3s ease infinite; }
+/* Animation assignments */
+.h1.w1.l1 { animation-name: h1w1l1; }
+.h1.w1.l2 { animation-name: h1w1l2; }
+.h1.w1.l3 { animation-name: h1w1l3; }
+.h1.w2.l1 { animation-name: h1w2l1; }
+.h1.w2.l2 { animation-name: h1w2l2; }
+.h1.w2.l3 { animation-name: h1w2l3; }
+.h1.w3.l1 { animation-name: h1w3l1; }
+.h1.w3.l2 { animation-name: h1w3l2; }
+.h1.w3.l3 { animation-name: h1w3l3; }
 
-/* Animation Assignments for H3 */
-.h3.w1.l1 { animation: h3w1l1 3s ease infinite; }
-.h3.w1.l2 { animation: h3w1l2 3s ease infinite; }
-.h3.w1.l3 { animation: h3w1l3 3s ease infinite; }
-.h3.w2.l1 { animation: h3w2l1 3s ease infinite; }
-.h3.w2.l2 { animation: h3w2l2 3s ease infinite; }
-.h3.w2.l3 { animation: h3w2l3 3s ease infinite; }
-.h3.w3.l1 { animation: h3w3l1 3s ease infinite; }
-.h3.w3.l2 { animation: h3w3l2 3s ease infinite; }
-.h3.w3.l3 { animation: h3w3l3 3s ease infinite; }
+.h2.w1.l1 { animation-name: h2w1l1; }
+.h2.w1.l2 { animation-name: h2w1l2; }
+.h2.w1.l3 { animation-name: h2w1l3; }
+.h2.w2.l1 { animation-name: h2w2l1; }
+.h2.w2.l2 { animation-name: h2w2l2; }
+.h2.w2.l3 { animation-name: h2w2l3; }
+.h2.w3.l1 { animation-name: h2w3l1; }
+.h2.w3.l2 { animation-name: h2w3l2; }
+.h2.w3.l3 { animation-name: h2w3l3; }
 
-@keyframes h1w1l1 {
-  0% {
-    transform: translate(-100%, -150%);
-  }
-  14% {
-    transform: translate(-100%, -175%);
-  }
-  28% {
-    transform: translate(-150%, -175%);
-  }
-  43% {
-    transform: translate(-200%, -300%);
-  }
-  57% {
-    transform: translate(-200%, -250%);
-  }
-  71% {
-    transform: translate(-250%, -225%);
-  }
-  85%, 100% {
-    transform: translate(-100%, -150%);
-  }
-}
+.h3.w1.l1 { animation-name: h3w1l1; }
+.h3.w1.l2 { animation-name: h3w1l2; }
+.h3.w1.l3 { animation-name: h3w1l3; }
+.h3.w2.l1 { animation-name: h3w2l1; }
+.h3.w2.l2 { animation-name: h3w2l2; }
+.h3.w2.l3 { animation-name: h3w2l3; }
+.h3.w3.l1 { animation-name: h3w3l1; }
+.h3.w3.l2 { animation-name: h3w3l2; }
+.h3.w3.l3 { animation-name: h3w3l3; }
 
-/* Add fade-in animation for the dashboard */
+/* Dashboard fade-in animation */
 .app {
   opacity: 0;
   animation: fadeIn 0.5s ease-in forwards;
