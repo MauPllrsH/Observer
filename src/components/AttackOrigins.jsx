@@ -1,12 +1,47 @@
 import React, { useState, useEffect } from 'react';
 import { logRequest } from '../utils/logging';
-import WorldMap from '../assets/world-map.svg?react';
+import WorldMap from '../assets/world-map.svg';
 
 const AttackOrigins = () => {
     const [attackData, setAttackData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedCountry, setSelectedCountry] = useState(null);
+
+    const updateMapColors = (svg, data) => {
+        if (!svg || !svg.target) return;
+        const paths = svg.target.getElementsByTagName('path');
+
+        Array.from(paths).forEach(path => {
+            const countryName = path.getAttribute('name');
+            if (!countryName) return;
+
+            const countryData = data.find(d =>
+                d.country.toLowerCase() === countryName.toLowerCase()
+            );
+
+            if (countryData) {
+                const maxAttacks = Math.max(...data.map(d => d.attack_count));
+                const intensity = countryData.attack_count / maxAttacks;
+                path.style.fill = `rgba(220, 38, 38, ${intensity * 0.8})`;
+            } else {
+                path.style.fill = '#2c2d31';
+            }
+
+            path.style.stroke = '#3f3f46';
+            path.style.strokeWidth = '0.2';
+            path.style.cursor = 'pointer';
+
+            // Add hover events
+            path.addEventListener('mouseenter', () => {
+                if (countryData) setSelectedCountry(countryData);
+            });
+
+            path.addEventListener('mouseleave', () => {
+                setSelectedCountry(null);
+            });
+        });
+    };
 
     useEffect(() => {
         let mounted = true;
@@ -25,8 +60,12 @@ const AttackOrigins = () => {
                 if (mounted) {
                     setAttackData(data);
                     setError(null);
-                    // Apply colors when new data arrives
-                    updateMapColors(data);
+
+                    // Update colors for existing SVG
+                    const svg = document.querySelector('svg');
+                    if (svg) {
+                        updateMapColors({ target: svg }, data);
+                    }
                 }
             } catch (err) {
                 if (mounted) {
@@ -47,48 +86,6 @@ const AttackOrigins = () => {
             if (interval) clearInterval(interval);
         };
     }, []);
-
-    const getCountryColor = (countryName) => {
-        const countryData = attackData.find(data =>
-            data.country.toLowerCase() === countryName.toLowerCase()
-        );
-
-        if (!countryData) return '#2c2d31'; // Default color for countries with no attacks
-
-        // Calculate color intensity based on attack count
-        const maxAttacks = Math.max(...attackData.map(d => d.attack_count));
-        const intensity = countryData.attack_count / maxAttacks;
-        return `rgba(220, 38, 38, ${intensity * 0.8})`; // Red with varying opacity
-    };
-
-    const updateMapColors = (data) => {
-        // Get all SVG paths (countries)
-        const svgElement = document.querySelector('svg');
-        if (!svgElement) return;
-
-        const paths = svgElement.getElementsByTagName('path');
-        Array.from(paths).forEach(path => {
-            const countryName = path.getAttribute('name');
-            if (countryName) {
-                path.style.fill = getCountryColor(countryName);
-                path.style.stroke = '#3f3f46';
-                path.style.strokeWidth = '0.2';
-                path.style.cursor = 'pointer';
-
-                // Add hover event listeners
-                path.addEventListener('mouseenter', () => {
-                    const countryData = data.find(d =>
-                        d.country.toLowerCase() === countryName.toLowerCase()
-                    );
-                    if (countryData) setSelectedCountry(countryData);
-                });
-
-                path.addEventListener('mouseleave', () => {
-                    setSelectedCountry(null);
-                });
-            }
-        });
-    };
 
     if (loading) {
         return (
@@ -151,7 +148,7 @@ const AttackOrigins = () => {
                         width: '100%',
                         height: '100%'
                     }}
-                    onLoad={() => updateMapColors(attackData)}
+                    onLoad={(svg) => updateMapColors(svg, attackData)}
                 />
 
                 {selectedCountry && (
