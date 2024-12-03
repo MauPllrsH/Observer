@@ -9,37 +9,53 @@ const AttackOrigins = () => {
     const [selectedCountry, setSelectedCountry] = useState(null);
 
     const updateMapColors = (svg, data) => {
-        if (!svg || !svg.target) return;
-        const paths = svg.target.getElementsByTagName('path');
+        console.log('Updating map colors', { svg, dataLength: data.length });
 
-        Array.from(paths).forEach(path => {
+        // Get all path elements from the SVG
+        const paths = svg.target?.querySelectorAll('path');
+        console.log('Found paths:', paths?.length);
+
+        if (!paths) return;
+
+        paths.forEach(path => {
             const countryName = path.getAttribute('name');
-            if (!countryName) return;
+            console.log('Processing country:', countryName);
 
+            // Find matching country data
             const countryData = data.find(d =>
-                d.country.toLowerCase() === countryName.toLowerCase()
+                d.country?.toLowerCase() === countryName?.toLowerCase()
             );
 
             if (countryData) {
+                console.log('Found attack data for:', countryName, countryData);
                 const maxAttacks = Math.max(...data.map(d => d.attack_count));
                 const intensity = countryData.attack_count / maxAttacks;
-                path.style.fill = `rgba(220, 38, 38, ${intensity * 0.8})`;
+                path.setAttribute('fill', `rgba(220, 38, 38, ${intensity * 0.8})`);
             } else {
-                path.style.fill = '#2c2d31';
+                path.setAttribute('fill', '#2c2d31');
             }
 
-            path.style.stroke = '#3f3f46';
-            path.style.strokeWidth = '0.2';
+            path.setAttribute('stroke', '#3f3f46');
+            path.setAttribute('stroke-width', '0.2');
             path.style.cursor = 'pointer';
 
-            // Add hover events
-            path.addEventListener('mouseenter', () => {
-                if (countryData) setSelectedCountry(countryData);
-            });
+            // Remove existing event listeners before adding new ones
+            const mouseEnter = () => {
+                if (countryData) {
+                    console.log('Mouse enter:', countryName);
+                    setSelectedCountry(countryData);
+                }
+            };
 
-            path.addEventListener('mouseleave', () => {
+            const mouseLeave = () => {
+                console.log('Mouse leave:', countryName);
                 setSelectedCountry(null);
-            });
+            };
+
+            path.removeEventListener('mouseenter', mouseEnter);
+            path.removeEventListener('mouseleave', mouseLeave);
+            path.addEventListener('mouseenter', mouseEnter);
+            path.addEventListener('mouseleave', mouseLeave);
         });
     };
 
@@ -57,6 +73,8 @@ const AttackOrigins = () => {
                 }
 
                 const data = await response.json();
+                console.log('Fetched data:', data);
+
                 if (mounted) {
                     setAttackData(data);
                     setError(null);
@@ -64,10 +82,12 @@ const AttackOrigins = () => {
                     // Update colors for existing SVG
                     const svg = document.querySelector('svg');
                     if (svg) {
+                        console.log('Found existing SVG, updating colors');
                         updateMapColors({ target: svg }, data);
                     }
                 }
             } catch (err) {
+                console.error('Fetch error:', err);
                 if (mounted) {
                     setError(err.message);
                 }
@@ -86,32 +106,6 @@ const AttackOrigins = () => {
             if (interval) clearInterval(interval);
         };
     }, []);
-
-    if (loading) {
-        return (
-            <div style={{
-                backgroundColor: '#2c2d31',
-                padding: '1.5rem',
-                borderRadius: '0.5rem',
-                color: '#a1a1a3'
-            }}>
-                Loading attack map...
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div style={{
-                backgroundColor: '#2c2d31',
-                padding: '1.5rem',
-                borderRadius: '0.5rem',
-                color: '#dc2626'
-            }}>
-                Error: {error}
-            </div>
-        );
-    }
 
     return (
         <div style={{
@@ -148,7 +142,10 @@ const AttackOrigins = () => {
                         width: '100%',
                         height: '100%'
                     }}
-                    onLoad={(svg) => updateMapColors(svg, attackData)}
+                    onLoad={(svg) => {
+                        console.log('SVG loaded');
+                        updateMapColors(svg, attackData);
+                    }}
                 />
 
                 {selectedCountry && (
