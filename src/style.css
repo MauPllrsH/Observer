@@ -164,8 +164,8 @@ code, pre {
   justify-content: center;
   align-items: center;
   z-index: 1000;
-  opacity: 1;
-  transition: opacity 0.5s ease-out;
+  margin: 0;
+  padding: 0;
 }
 
 .loading-screen.fade-out {
@@ -190,6 +190,7 @@ code, pre {
   position: absolute;
   width: 86px;
   height: 100px;
+  z-index: calc(-1 * var(--cube-height, 1));
 }
 
 .face {
@@ -198,6 +199,10 @@ code, pre {
   position: absolute;
   transform-origin: 0 0;
 }
+
+.h1 { --cube-height: 1; }
+.h2 { --cube-height: 2; }
+.h3 { --cube-height: 3; }
 
 .right {
   background: var(--cube-right);
@@ -275,6 +280,30 @@ code, pre {
 .h3.w3.l1 { animation: h3w3l1 3s ease infinite; }
 .h3.w3.l2 { animation: h3w3l2 3s ease infinite; }
 .h3.w3.l3 { animation: h3w3l3 3s ease infinite; }
+
+@keyframes h1w1l1 {
+  0% {
+    transform: translate(-100%, -150%);
+  }
+  14% {
+    transform: translate(-100%, -175%);
+  }
+  28% {
+    transform: translate(-150%, -175%);
+  }
+  43% {
+    transform: translate(-200%, -300%);
+  }
+  57% {
+    transform: translate(-200%, -250%);
+  }
+  71% {
+    transform: translate(-250%, -225%);
+  }
+  85%, 100% {
+    transform: translate(-100%, -150%);
+  }
+}
 
 /* Add fade-in animation for the dashboard */
 .app {
