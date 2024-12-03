@@ -18,83 +18,26 @@ const AttackOrigins = () => {
         'LT': 'Lithuania',
         'NL': 'Netherlands',
         'CN': 'China',
-        'GB': 'United Kingdom',
-        'DE': 'Germany',
-        'FR': 'France',
-        'IN': 'India',
-        'BR': 'Brazil',
-        'RU': 'Russia',
-        'JP': 'Japan',
-        'CA': 'Canada',
-        'AU': 'Australia',
-        'IT': 'Italy'
+        // ... add more as needed
     };
 
-    const updateMapColors = (svg, data) => {
-        console.log('Attack Data countries:', data.map(d => d.country));
+    const getCountryColor = (countryCode, countryClass, countryName) => {
+        const mappedCountry = countryMapping[countryCode] ||
+            countryMapping[countryClass] ||
+            countryName;
 
-        const svgElement = svg.target.querySelector('svg') || svg.target;
-        console.log('SVG element found:', !!svgElement);
+        const countryData = attackData.find(d =>
+            d.country === mappedCountry ||
+            d.country === countryCode ||
+            d.country === countryClass
+        );
 
-        const paths = svgElement.getElementsByTagName('path');
-        console.log('Number of paths:', paths.length);
-
-        Array.from(paths).forEach(path => {
-            // Check both id and class attributes
-            const countryCode = path.getAttribute('id');
-            const countryClass = path.getAttribute('class');
-            let mappedCountry = countryMapping[countryCode] || countryMapping[countryClass];
-
-            // If no mapping found, try using the name attribute directly
-            if (!mappedCountry) {
-                mappedCountry = path.getAttribute('name');
-            }
-
-            console.log('Processing path:', {
-                countryCode,
-                countryClass,
-                mappedCountry,
-                name: path.getAttribute('name')
-            });
-
-            const countryData = data.find(d =>
-                d.country === mappedCountry ||
-                d.country === countryCode ||
-                d.country === countryClass
-            );
-
-            if (countryData) {
-                console.log('Found matching data for:', mappedCountry);
-                const maxAttacks = Math.max(...data.map(d => d.attack_count));
-                const intensity = countryData.attack_count / maxAttacks;
-                path.setAttribute('fill', `rgba(220, 38, 38, ${intensity * 0.8})`);
-            } else {
-                path.setAttribute('fill', '#2c2d31');
-            }
-
-            path.setAttribute('stroke', '#3f3f46');
-            path.setAttribute('stroke-width', '0.2');
-            path.style.cursor = 'pointer';
-
-            // Create unique function references for event listeners
-            const handleMouseEnter = () => {
-                if (countryData) {
-                    setSelectedCountry(countryData);
-                }
-            };
-
-            const handleMouseLeave = () => {
-                setSelectedCountry(null);
-            };
-
-            // Remove old listeners if they exist
-            path.removeEventListener('mouseenter', handleMouseEnter);
-            path.removeEventListener('mouseleave', handleMouseLeave);
-
-            // Add new listeners
-            path.addEventListener('mouseenter', handleMouseEnter);
-            path.addEventListener('mouseleave', handleMouseLeave);
-        });
+        if (countryData) {
+            const maxAttacks = Math.max(...attackData.map(d => d.attack_count));
+            const intensity = countryData.attack_count / maxAttacks;
+            return `rgba(220, 38, 38, ${intensity * 0.8})`;
+        }
+        return '#2c2d31';
     };
 
     useEffect(() => {
@@ -116,13 +59,6 @@ const AttackOrigins = () => {
                 if (mounted) {
                     setAttackData(data);
                     setError(null);
-
-                    // Update colors for existing SVG
-                    const svg = document.querySelector('svg');
-                    if (svg) {
-                        console.log('Found existing SVG, updating colors');
-                        updateMapColors({ target: svg }, data);
-                    }
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
@@ -201,13 +137,37 @@ const AttackOrigins = () => {
                 backgroundColor: '#1a1b1e',
                 borderRadius: '0.5rem'
             }}>
-                <WorldMap
-                    style={{
-                        width: '100%',
-                        height: '100%'
-                    }}
-                    onLoad={(svg) => updateMapColors(svg, attackData)}
-                />
+                <svg
+                    baseProfile="tiny"
+                    fill="#2c2d31"
+                    height="100%"
+                    stroke="#3f3f46"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth=".2"
+                    version="1.2"
+                    viewBox="0 0 2000 857"
+                    width="100%"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    {/* Your SVG paths here */}
+                    <path
+                        d="M1383 261.6l1.5 1.8-2.9 0.8-2.4 1.1-5.9 0.8-5.3 1.3-2.4 2.8 1.9 2.7 1.4 3.2-2 2.7 0.8 2.5-0.9 2.3-5.2-0.2 3.1 4.2-3.1 1.7-1.4 3.8 1.1 3.9-1.8 1.8-2.1-0.6-4 0.9-0.2 1.7-4.1 0-2.3 3.7 0.8 5.4-6.6 2.7-3.9-0.6-0.9 1.4-3.4-0.8-5.3 1-9.6-3.3 3.9-5.8-1.1-4.1-4.3-1.1-1.2-4.1-2.7-5.1 1.6-3.5-2.5-1 0.5-4.7 0.6-8 5.9 2.5 3.9-0.9 0.4-2.9 4-0.9 2.6-2-0.2-5.1 4.2-1.3 0.3-2.2 2.9 1.7 1.6 0.2 3 0 4.3 1.4 1.8 0.7 3.4-2 2.1 1.2 0.9-2.9 3.2 0.1 0.6-0.9-0.2-2.6 1.7-2.2 3.3 1.4-0.1 2 1.7 0.3 0.9 5.4 2.7 2.1 1.5-1.4 2.2-0.6 2.5-2.9 3.8 0.5 5.4 0z"
+                        id="AF"
+                        name="Afghanistan"
+                        fill={getCountryColor('AF', null, 'Afghanistan')}
+                        style={{ cursor: 'pointer' }}
+                        onMouseEnter={() => {
+                            const countryData = attackData.find(d =>
+                                d.country === 'Afghanistan' ||
+                                d.country === 'AF'
+                            );
+                            if (countryData) setSelectedCountry(countryData);
+                        }}
+                        onMouseLeave={() => setSelectedCountry(null)}
+                    />
+                    {/* Add more paths similarly */}
+                </svg>
 
                 {selectedCountry && (
                     <div style={{
