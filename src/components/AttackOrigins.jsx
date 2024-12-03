@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { logRequest } from '../utils/logging';
-import WorldMap from '../assets/world-map.svg';
+import WorldMap from '../assets/world-map.svg?react';
 
 const AttackOrigins = () => {
     const [attackData, setAttackData] = useState([]);
@@ -25,6 +25,8 @@ const AttackOrigins = () => {
                 if (mounted) {
                     setAttackData(data);
                     setError(null);
+                    // Apply colors when new data arrives
+                    updateMapColors(data);
                 }
             } catch (err) {
                 if (mounted) {
@@ -47,12 +49,45 @@ const AttackOrigins = () => {
     }, []);
 
     const getCountryColor = (countryName) => {
-        const countryData = attackData.find(data => data.country === countryName);
-        if (!countryData) return '#2c2d31';
+        const countryData = attackData.find(data =>
+            data.country.toLowerCase() === countryName.toLowerCase()
+        );
 
+        if (!countryData) return '#2c2d31'; // Default color for countries with no attacks
+
+        // Calculate color intensity based on attack count
         const maxAttacks = Math.max(...attackData.map(d => d.attack_count));
         const intensity = countryData.attack_count / maxAttacks;
-        return `rgba(220, 38, 38, ${intensity * 0.8})`;
+        return `rgba(220, 38, 38, ${intensity * 0.8})`; // Red with varying opacity
+    };
+
+    const updateMapColors = (data) => {
+        // Get all SVG paths (countries)
+        const svgElement = document.querySelector('svg');
+        if (!svgElement) return;
+
+        const paths = svgElement.getElementsByTagName('path');
+        Array.from(paths).forEach(path => {
+            const countryName = path.getAttribute('name');
+            if (countryName) {
+                path.style.fill = getCountryColor(countryName);
+                path.style.stroke = '#3f3f46';
+                path.style.strokeWidth = '0.2';
+                path.style.cursor = 'pointer';
+
+                // Add hover event listeners
+                path.addEventListener('mouseenter', () => {
+                    const countryData = data.find(d =>
+                        d.country.toLowerCase() === countryName.toLowerCase()
+                    );
+                    if (countryData) setSelectedCountry(countryData);
+                });
+
+                path.addEventListener('mouseleave', () => {
+                    setSelectedCountry(null);
+                });
+            }
+        });
     };
 
     if (loading) {
@@ -116,26 +151,7 @@ const AttackOrigins = () => {
                         width: '100%',
                         height: '100%'
                     }}
-                    onLoad={(svg) => {
-                        // When SVG loads, set colors and event listeners for all countries
-                        const paths = svg.target.getElementsByTagName('path');
-                        Array.from(paths).forEach(path => {
-                            const countryName = path.getAttribute('name');
-                            path.style.fill = getCountryColor(countryName);
-                            path.style.stroke = '#3f3f46';
-                            path.style.strokeWidth = '0.2';
-                            path.style.cursor = 'pointer';
-
-                            path.addEventListener('mouseenter', () => {
-                                const countryData = attackData.find(data => data.country === countryName);
-                                if (countryData) setSelectedCountry(countryData);
-                            });
-
-                            path.addEventListener('mouseleave', () => {
-                                setSelectedCountry(null);
-                            });
-                        });
-                    }}
+                    onLoad={() => updateMapColors(attackData)}
                 />
 
                 {selectedCountry && (
