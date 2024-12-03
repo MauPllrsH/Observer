@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { logRequest } from '../utils/logging';
 import WorldMap from '../assets/world-map.svg';
 
@@ -7,6 +7,7 @@ const AttackOrigins = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedCountry, setSelectedCountry] = useState(null);
+    const svgRef = useRef(null);
 
     const countryMapping = {
         'AF': 'Afghanistan',
@@ -18,26 +19,16 @@ const AttackOrigins = () => {
         'LT': 'Lithuania',
         'NL': 'Netherlands',
         'CN': 'China',
-        // ... add more as needed
-    };
-
-    const getCountryColor = (countryCode, countryClass, countryName) => {
-        const mappedCountry = countryMapping[countryCode] ||
-            countryMapping[countryClass] ||
-            countryName;
-
-        const countryData = attackData.find(d =>
-            d.country === mappedCountry ||
-            d.country === countryCode ||
-            d.country === countryClass
-        );
-
-        if (countryData) {
-            const maxAttacks = Math.max(...attackData.map(d => d.attack_count));
-            const intensity = countryData.attack_count / maxAttacks;
-            return `rgba(220, 38, 38, ${intensity * 0.8})`;
-        }
-        return '#2c2d31';
+        'GB': 'United Kingdom',
+        'DE': 'Germany',
+        'FR': 'France',
+        'IN': 'India',
+        'BR': 'Brazil',
+        'RU': 'Russia',
+        'JP': 'Japan',
+        'CA': 'Canada',
+        'AU': 'Australia',
+        'IT': 'Italy'
     };
 
     useEffect(() => {
@@ -54,11 +45,12 @@ const AttackOrigins = () => {
                 }
 
                 const data = await response.json();
-                console.log('Fetched data:', data);
+                console.log('Fetched attack data:', data);
 
                 if (mounted) {
                     setAttackData(data);
                     setError(null);
+                    updateMap(data);
                 }
             } catch (err) {
                 console.error('Fetch error:', err);
@@ -80,6 +72,45 @@ const AttackOrigins = () => {
             if (interval) clearInterval(interval);
         };
     }, []);
+
+    const updateMap = (data) => {
+        if (!svgRef.current) return;
+
+        const svg = svgRef.current;
+        const paths = svg.getElementsByTagName('path');
+
+        Array.from(paths).forEach(path => {
+            const id = path.getAttribute('id');
+            const className = path.getAttribute('class');
+            const name = path.getAttribute('name');
+
+            // Try to find matching country data
+            const countryName = countryMapping[id] || countryMapping[className] || name;
+            const countryData = data.find(d => d.country === countryName);
+
+            if (countryData) {
+                const maxAttacks = Math.max(...data.map(d => d.attack_count));
+                const intensity = countryData.attack_count / maxAttacks;
+                path.style.fill = `rgba(220, 38, 38, ${intensity * 0.8})`;
+
+                // Add hover events
+                path.style.cursor = 'pointer';
+                path.onmouseenter = () => setSelectedCountry(countryData);
+                path.onmouseleave = () => setSelectedCountry(null);
+            } else {
+                path.style.fill = '#2c2d31';
+            }
+
+            path.style.stroke = '#3f3f46';
+            path.style.strokeWidth = '0.2';
+        });
+    };
+
+    useEffect(() => {
+        if (attackData.length > 0) {
+            updateMap(attackData);
+        }
+    }, [attackData]);
 
     if (loading) {
         return (
@@ -137,37 +168,13 @@ const AttackOrigins = () => {
                 backgroundColor: '#1a1b1e',
                 borderRadius: '0.5rem'
             }}>
-                <svg
-                    baseProfile="tiny"
-                    fill="#2c2d31"
-                    height="100%"
-                    stroke="#3f3f46"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth=".2"
-                    version="1.2"
-                    viewBox="0 0 2000 857"
-                    width="100%"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    {/* Your SVG paths here */}
-                    <path
-                        d="M1383 261.6l1.5 1.8-2.9 0.8-2.4 1.1-5.9 0.8-5.3 1.3-2.4 2.8 1.9 2.7 1.4 3.2-2 2.7 0.8 2.5-0.9 2.3-5.2-0.2 3.1 4.2-3.1 1.7-1.4 3.8 1.1 3.9-1.8 1.8-2.1-0.6-4 0.9-0.2 1.7-4.1 0-2.3 3.7 0.8 5.4-6.6 2.7-3.9-0.6-0.9 1.4-3.4-0.8-5.3 1-9.6-3.3 3.9-5.8-1.1-4.1-4.3-1.1-1.2-4.1-2.7-5.1 1.6-3.5-2.5-1 0.5-4.7 0.6-8 5.9 2.5 3.9-0.9 0.4-2.9 4-0.9 2.6-2-0.2-5.1 4.2-1.3 0.3-2.2 2.9 1.7 1.6 0.2 3 0 4.3 1.4 1.8 0.7 3.4-2 2.1 1.2 0.9-2.9 3.2 0.1 0.6-0.9-0.2-2.6 1.7-2.2 3.3 1.4-0.1 2 1.7 0.3 0.9 5.4 2.7 2.1 1.5-1.4 2.2-0.6 2.5-2.9 3.8 0.5 5.4 0z"
-                        id="AF"
-                        name="Afghanistan"
-                        fill={getCountryColor('AF', null, 'Afghanistan')}
-                        style={{ cursor: 'pointer' }}
-                        onMouseEnter={() => {
-                            const countryData = attackData.find(d =>
-                                d.country === 'Afghanistan' ||
-                                d.country === 'AF'
-                            );
-                            if (countryData) setSelectedCountry(countryData);
-                        }}
-                        onMouseLeave={() => setSelectedCountry(null)}
-                    />
-                    {/* Add more paths similarly */}
-                </svg>
+                <WorldMap
+                    ref={svgRef}
+                    style={{
+                        width: '100%',
+                        height: '100%'
+                    }}
+                />
 
                 {selectedCountry && (
                     <div style={{
