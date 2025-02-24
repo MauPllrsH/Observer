@@ -57,7 +57,8 @@ const AnomalousIPs = () => {
             backgroundColor: '#2c2d31',
             padding: '1.5rem',
             borderRadius: '0.5rem',
-            color: '#a1a1a3'
+            color: '#a1a1a3',
+            height: '500px' // Match graph height
         }}>
             Loading...
         </div>
@@ -68,7 +69,8 @@ const AnomalousIPs = () => {
             backgroundColor: '#2c2d31',
             padding: '1.5rem',
             borderRadius: '0.5rem',
-            color: '#dc2626'
+            color: '#dc2626',
+            height: '500px' // Match graph height
         }}>
             Error: {error}
         </div>
@@ -79,70 +81,92 @@ const AnomalousIPs = () => {
             backgroundColor: '#2c2d31',
             padding: '1.5rem',
             borderRadius: '0.5rem',
-            border: '1px solid #3f3f46'
+            border: '1px solid #3f3f46',
+            height: '500px', // Match graph height
+            display: 'flex',
+            flexDirection: 'column'
         }}>
-            <h2 style={{
-                color: '#e1e1e3',
-                fontSize: '1.5rem',
-                marginBottom: '1rem'
-            }}>Anomalous IPs</h2>
+            <div style={{
+                marginBottom: '1rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center'
+            }}>
+                <h2 style={{
+                    color: '#e1e1e3',
+                    fontSize: '1.5rem',
+                    margin: 0
+                }}>Anomalous IPs</h2>
+                <span style={{
+                    color: '#a1a1a3',
+                    fontSize: '0.875rem'
+                }}>
+                    {anomalousIPs.length} Active Threats
+                </span>
+            </div>
 
-            {anomalousIPs.length === 0 ? (
-                <p style={{ color: '#a1a1a3' }}>No anomalous IPs found</p>
-            ) : (
-                <div>
-                    {anomalousIPs.map((ip) => (
-                        <div
-                            key={ip.ip}
-                            style={{
-                                backgroundColor: '#1a1b1e',
-                                borderRadius: '0.5rem',
-                                marginBottom: '0.5rem',
-                                border: '1px solid #3f3f46',
-                                borderLeft: '4px solid #dc2626'
-                            }}
-                        >
-                            <div style={{
-                                padding: '0.75rem',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                borderBottom: '1px solid #3f3f46'
-                            }}>
-                                <span style={{ color: '#a1a1a3', fontSize: '0.875rem' }}>
-                                    {new Date(ip.last_detected).toLocaleString()}
-                                </span>
-                                <span style={{
-                                    padding: '0.25rem 0.75rem',
-                                    borderRadius: '9999px',
-                                    fontSize: '0.875rem',
-                                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                                    color: '#dc2626'
+            <div style={{
+                overflowY: 'auto',
+                flex: 1,
+                marginRight: '-0.5rem',
+                paddingRight: '0.5rem'
+            }}>
+                {anomalousIPs.length === 0 ? (
+                    <p style={{ color: '#a1a1a3' }}>No anomalous IPs found</p>
+                ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        {anomalousIPs.map((ip) => (
+                            <div
+                                key={ip.ip}
+                                style={{
+                                    backgroundColor: '#1a1b1e',
+                                    borderRadius: '0.5rem',
+                                    border: '1px solid #3f3f46',
+                                    borderLeft: '4px solid #dc2626'
+                                }}
+                            >
+                                <div style={{
+                                    padding: '0.75rem',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    borderBottom: '1px solid #3f3f46'
                                 }}>
-                                    ⚠️ Risk Level: {ip.threat_level.toFixed(1)}%
-                                </span>
-                            </div>
-                            <div style={{ padding: '0.75rem' }}>
-                                <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                    <strong style={{ color: '#e1e1e3' }}>IP Address:</strong> {ip.ip}
-                                </p>
-                                <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                    <strong style={{ color: '#e1e1e3' }}>Total Requests:</strong> {ip.total_requests}
-                                </p>
-                                <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                    <strong style={{ color: '#e1e1e3' }}>Anomalous Requests:</strong> {ip.anomalous_requests}
-                                </p>
-                                {ip.matched_rules?.length > 0 && (
+                                    <span style={{ color: '#a1a1a3', fontSize: '0.875rem' }}>
+                                        {new Date(ip.last_detected).toLocaleString()}
+                                    </span>
+                                    <span style={{
+                                        padding: '0.25rem 0.75rem',
+                                        borderRadius: '9999px',
+                                        fontSize: '0.875rem',
+                                        backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                                        color: '#dc2626'
+                                    }}>
+                                        ⚠️ Risk Level: {ip.threat_level.toFixed(1)}%
+                                    </span>
+                                </div>
+                                <div style={{ padding: '0.75rem' }}>
                                     <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
-                                        <strong style={{ color: '#e1e1e3' }}>Matched Rules:</strong>
-                                        {ip.matched_rules.join(', ')}
+                                        <strong style={{ color: '#e1e1e3' }}>IP Address:</strong> {ip.ip}
                                     </p>
-                                )}
+                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                        <strong style={{ color: '#e1e1e3' }}>Total Requests:</strong> {ip.total_requests}
+                                    </p>
+                                    <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                        <strong style={{ color: '#e1e1e3' }}>Anomalous Requests:</strong> {ip.anomalous_requests}
+                                    </p>
+                                    {ip.matched_rules?.length > 0 && (
+                                        <p style={{ color: '#a1a1a3', marginBottom: '0.5rem' }}>
+                                            <strong style={{ color: '#e1e1e3' }}>Matched Rules:</strong>
+                                            {' ' + ip.matched_rules.join(', ')}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

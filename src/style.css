@@ -1,3 +1,6 @@
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Roboto&family=Source+Sans+Pro:wght@400;700&display=swap');
+
 :root {
   --bg-primary: #1a1b1e;
   --bg-secondary: #2c2d31;
@@ -8,21 +11,28 @@
   --attack-bg: rgba(220, 38, 38, 0.1);
   --normal-color: #22c55e;
   --normal-bg: rgba(34, 197, 94, 0.1);
+  --cube-left: #D53A33;
+  --cube-right: #E79C10;
+  --cube-top: #1d9099;
 }
 
 * {
-  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 body {
-  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', Oxygen, Ubuntu, Cantarell, sans-serif;
   background-color: #1a1b1e;
   color: #e1e1e3;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Source Sans Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-weight: 700;
+}
+
+code, pre {
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .dashboard {
@@ -100,3 +110,47 @@ h1, h2, h3, h4, h5, h6 {
 .log-entry.normal {
   border-left: 4px solid var(--normal-color);
 }
+
+.component-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.stats-panel {
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+}
+
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.stats-header h2 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.stats-metrics {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.chart-container {
+  width: 100%;
+  height: 400px;
+  margin-top: 1rem;
+}
+
+
+
+
