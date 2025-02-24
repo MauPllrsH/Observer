@@ -3,6 +3,7 @@ import AnomalousIPs from "./AnomalousIPs.jsx";
 import AttackTimeline from "./AttackTimeline.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import { logRequest } from '../utils/logging';
+import PreventionModeToggle from "./PreventionModeToggle.jsx";
 
 const API_URL = 'http://157.245.249.219:5000';
 
@@ -161,9 +162,14 @@ const DashboardContent = () => {
         <div className="min-h-screen p-6 bg-[#1a1b1e] text-[#e1e1e3]">
             {/* Status Bar */}
             <div className="mb-6 p-4 bg-[#2c2d31] rounded-lg border border-[#3f3f46]">
-                <p className="text-[#a1a1a3]">Last updated: {lastUpdate}</p>
-                <p className="text-[#a1a1a3]">Logs loaded: {logs.length}</p>
-                {loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
+                <div className="flex justify-between items-center mb-3">
+                    <div>
+                        <p className="text-[#a1a1a3]">Last updated: {lastUpdate}</p>
+                        <p className="text-[#a1a1a3]">Logs loaded: {logs.length}</p>
+                        {loading && <p className="text-[#a1a1a3]">Refreshing...</p>}
+                    </div>
+                    <PreventionModeToggle />
+                </div>
                 {error && (
                     <div className="mt-2 p-2 bg-red-900/20 rounded border border-red-700">
                         <div className="text-red-400 flex items-center justify-between">

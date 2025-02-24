@@ -4,7 +4,7 @@ function App() {
     return (
         <div className="app">
             <header>
-                <h1>IDS Security Dashboard</h1>
+                <h1>WAF Security Dashboard</h1>
             </header>
             <main>
                 <Dashboard />
