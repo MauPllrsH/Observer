@@ -35,7 +35,7 @@ const StatusBar = ({
         </div>
         
         <div className="status-actions">
-          {!loading && (
+          {!loading ? (
             <button 
               onClick={onRefresh}
               className="refresh-button"
@@ -43,6 +43,15 @@ const StatusBar = ({
             >
               <RefreshCw size={16} />
               <span>Refresh Now</span>
+            </button>
+          ) : (
+            <button 
+              className="refresh-button refresh-button-disabled"
+              disabled
+              aria-label="Refreshing"
+            >
+              <RefreshCw size={16} className="spinning" />
+              <span>Refreshing...</span>
             </button>
           )}
         </div>

@@ -5,6 +5,9 @@ import { logRequest } from '../utils/logging';
 const API_BASE_PATH = '/api';
 export const API_URL = '';
 
+// Prevent duplicate requests by adding a timestamp to URLs
+let lastRequestTimestamp = {};
+
 /**
  * Fetch data with retry logic for failed requests
  * @param {string} url - URL to fetch
@@ -58,12 +61,27 @@ export const apiClient = {
    * @returns {Promise<Array>} - Array of logs
    */
   async fetchLogs(since = null) {
+    // Check if we've made the same request recently
+    const endpoint = 'logs';
+    const now = Date.now();
+    
+    if (lastRequestTimestamp[endpoint] && (now - lastRequestTimestamp[endpoint] < 2000)) {
+      // Prevent requests more frequently than every 2 seconds
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    
+    lastRequestTimestamp[endpoint] = now;
+    
+    // Build URL
     let url = `${API_BASE_PATH}/logs`;
     
     // Add query parameters if needed
     if (since) {
       url += `?since=${encodeURIComponent(since)}`;
     }
+    
+    // Add cache-busting parameter
+    url += (url.includes('?') ? '&' : '?') + `_t=${now}`;
     
     logRequest('apiClient', 'fetchLogs', { since });
     const data = await fetchWithRetry(url);
@@ -84,8 +102,18 @@ export const apiClient = {
    * @returns {Promise<Array>} - Array of anomalous IPs
    */
   async fetchAnomalousIPs() {
+    // Prevent rapid duplicate requests
+    const endpoint = 'anomalousIPs';
+    const now = Date.now();
+    
+    if (lastRequestTimestamp[endpoint] && (now - lastRequestTimestamp[endpoint] < 2000)) {
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    
+    lastRequestTimestamp[endpoint] = now;
+    
     logRequest('apiClient', 'fetchAnomalousIPs');
-    const url = `${API_BASE_PATH}/anomalous-ips`;
+    const url = `${API_BASE_PATH}/anomalous-ips?_t=${now}`;
     return fetchWithRetry(url);
   },
   
@@ -94,8 +122,18 @@ export const apiClient = {
    * @returns {Promise<Array>} - Array of timeline data points
    */
   async fetchAttackTimeline() {
+    // Prevent rapid duplicate requests
+    const endpoint = 'attackTimeline';
+    const now = Date.now();
+    
+    if (lastRequestTimestamp[endpoint] && (now - lastRequestTimestamp[endpoint] < 2000)) {
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    
+    lastRequestTimestamp[endpoint] = now;
+    
     logRequest('apiClient', 'fetchAttackTimeline');
-    const url = `${API_BASE_PATH}/attack-timeline`;
+    const url = `${API_BASE_PATH}/attack-timeline?_t=${now}`;
     return fetchWithRetry(url);
   },
   
@@ -104,8 +142,18 @@ export const apiClient = {
    * @returns {Promise<Object>} - Attack origins data
    */
   async fetchAttackOrigins() {
+    // Prevent rapid duplicate requests
+    const endpoint = 'attackOrigins';
+    const now = Date.now();
+    
+    if (lastRequestTimestamp[endpoint] && (now - lastRequestTimestamp[endpoint] < 2000)) {
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    
+    lastRequestTimestamp[endpoint] = now;
+    
     logRequest('apiClient', 'fetchAttackOrigins');
-    const url = `${API_BASE_PATH}/attack-origins`;
+    const url = `${API_BASE_PATH}/attack-origins?_t=${now}`;
     return fetchWithRetry(url);
   }
 };

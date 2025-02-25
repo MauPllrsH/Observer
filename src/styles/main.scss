@@ -99,14 +99,16 @@ main {
   height: calc(100vh - 58px); // Account for compact header (50px + borders)
   display: flex;
   flex-direction: column;
+  overflow: hidden;
   
   &-content {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: $spacing-4;
-    overflow: hidden;
+    grid-template-rows: repeat(2, minmax(200px, 1fr));
+    gap: $spacing-3;
+    min-height: 0; // This is important for grid to respect container height
+    overflow: auto; // Allow scrolling if needed
   }
   
   &-grid {
@@ -273,6 +275,15 @@ main {
   
   &:active {
     background-color: rgba($info-color, 0.4);
+  }
+  
+  &-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    
+    &:hover {
+      background-color: $info-bg;
+    }
   }
 }
 

@@ -161,7 +161,7 @@ export function SecurityProvider({ children }) {
     loadAllData();
   }, [loadAllData]);
   
-  // Only load data initially, no polling
+  // Only load data initially, explicitly no auto polling
   useEffect(() => {
     let mounted = true;
     
@@ -183,7 +183,7 @@ export function SecurityProvider({ children }) {
       logRequest('SecurityContext', 'cleanup');
       mounted = false;
     };
-  }, [loadAllData]);
+  }, []); // Empty dependency array - only run on mount
   
   // Context value
   const value = {
