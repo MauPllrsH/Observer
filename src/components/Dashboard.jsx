@@ -40,18 +40,14 @@ const Dashboard = () => {
                 onRefresh={refreshData}
             />
 
-            {/* Component Grid - Top Row */}
-            <div className="dashboard-grid">
+            {/* Compact Grid Layout */}
+            <div className="dashboard-content">
                 <ErrorBoundary>
                     <AnomalousIPs />
                 </ErrorBoundary>
                 <ErrorBoundary>
                     <AttackTimeline />
                 </ErrorBoundary>
-            </div>
-
-            {/* Component Grid - Bottom Row */}
-            <div className="dashboard-grid">
                 <ErrorBoundary>
                     <AttackOrigins />
                 </ErrorBoundary>
