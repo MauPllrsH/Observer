@@ -94,20 +94,23 @@ export default function AttackTimeline() {
     }
 
     return (
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl text-gray-200">Attack Timeline (Last 24 Hours)</h2>
-                <div className="flex gap-4 text-sm text-gray-400">
-                    <span>Peak Attacks: {Math.max(...timelineData.map(d => d.attacks))}</span>
-                    <span>Data Points: {timelineData.length}</span>
+        <div className="card attack-timeline">
+            <div className="card-header attack-timeline-header">
+                <div className="card-title">
+                    <h2>Attack Timeline</h2>
+                    <div className="card-stats">
+                        <span>Peak: {Math.max(...timelineData.map(d => d.attacks))}</span>
+                        <span>Points: {timelineData.length}</span>
+                    </div>
                 </div>
             </div>
-
-            <div style={{ width: '100%', height: 400 }} className="mt-4">
+            
+            <div className="card-content attack-timeline-content">
+                <div style={{ width: '100%', height: '200px' }} className="mt-2">
                 <ResponsiveContainer>
                     <AreaChart
                         data={timelineData}
-                        margin={{ top: 10, right: 30, left: 0, bottom: 30 }}
+                        margin={{ top: 5, right: 10, left: 0, bottom: 30 }}
                     >
                         <defs>
                             <linearGradient id="attackGradient" x1="0" y1="0" x2="0" y2="1">
@@ -140,6 +143,7 @@ export default function AttackTimeline() {
                         />
                     </AreaChart>
                 </ResponsiveContainer>
+                </div>
             </div>
         </div>
     );
