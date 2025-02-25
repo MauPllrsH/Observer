@@ -1,0 +1,72 @@
+// Colors
+$bg-primary: #0f172a;
+$bg-secondary: #1e293b;
+$bg-tertiary: #334155;
+$text-primary: #f1f5f9;
+$text-secondary: #94a3b8;
+$border-color: #475569;
+$attack-color: #ef4444;
+$attack-bg: rgba(239, 68, 68, 0.15);
+$normal-color: #22c55e;
+$normal-bg: rgba(34, 197, 94, 0.15);
+$warning-color: #eab308;
+$warning-bg: rgba(234, 179, 8, 0.15);
+$info-color: #3b82f6;
+$info-bg: rgba(59, 130, 246, 0.15);
+$cube-left: #DC5356;
+$cube-right: #F39C12;
+$cube-top: #3498DB;
+
+// Typography
+$font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+$font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+$font-family-mono: 'JetBrains Mono', 'SF Mono', Monaco, Menlo, Consolas, 'Ubuntu Mono', monospace;
+
+// Spacing
+$spacing-1: 0.25rem;  // 4px
+$spacing-2: 0.5rem;   // 8px
+$spacing-3: 0.75rem;  // 12px
+$spacing-4: 1rem;     // 16px
+$spacing-6: 1.5rem;   // 24px
+$spacing-8: 2rem;     // 32px
+$spacing-12: 3rem;    // 48px
+$spacing-16: 4rem;    // 64px
+
+// Borders
+$border-radius-sm: 0.25rem;  // 4px
+$border-radius: 0.5rem;      // 8px
+$border-radius-lg: 0.75rem;  // 12px
+$border-radius-full: 9999px;
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+
+// Z-index
+$z-index-1: 10;
+$z-index-2: 20;
+$z-index-3: 30;
+$z-index-4: 40;
+$z-index-5: 50;
+$z-index-max: 999;
+
+// Transitions
+$transition-fast: 150ms;
+$transition-normal: 250ms;
+$transition-slow: 350ms;
+
+// Breakpoints
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Container widths
+$container-sm: 640px;
+$container-md: 768px;
+$container-lg: 1024px;
+$container-xl: 1280px;

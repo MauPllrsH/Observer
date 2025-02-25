@@ -1,0 +1,522 @@
+@import 'variables';
+
+// Import fonts
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono&display=swap');
+
+/* ---------- Reset & Base Styles ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: $font-family-base;
+  background-color: $bg-primary;
+  color: $text-primary;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: $font-family-heading;
+  font-weight: 600;
+  line-height: 1.2;
+  color: $text-primary;
+}
+
+code, pre {
+  font-family: $font-family-mono;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ---------- Layout ---------- */
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  padding: $spacing-4 $spacing-6;
+  background-color: $bg-secondary;
+  border-bottom: 1px solid $border-color;
+  box-shadow: $shadow;
+  
+  h1 {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: $spacing-3;
+    
+    &::before {
+      content: "";
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background-color: $attack-color;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+  }
+}
+
+main {
+  flex: 1;
+  padding: $spacing-6;
+  
+  @media (max-width: $breakpoint-md) {
+    padding: $spacing-4;
+  }
+}
+
+/* ---------- Dashboard ---------- */
+.dashboard {
+  max-width: 100%;
+  
+  &-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-6;
+    margin-bottom: $spacing-6;
+    
+    @media (max-width: $breakpoint-lg) {
+      grid-template-columns: 1fr;
+      gap: $spacing-4;
+    }
+  }
+}
+
+/* ---------- Card Component ---------- */
+.card {
+  background-color: $bg-secondary;
+  border-radius: $border-radius;
+  box-shadow: $shadow-md;
+  overflow: hidden;
+  border: 1px solid $border-color;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform $transition-normal, box-shadow $transition-normal;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-lg;
+  }
+  
+  &-header {
+    padding: $spacing-4;
+    border-bottom: 1px solid rgba($border-color, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  &-title {
+    h2 {
+      font-size: 1.25rem;
+      margin: 0;
+    }
+  }
+  
+  &-stats {
+    display: flex;
+    gap: $spacing-3;
+    margin-top: $spacing-2;
+    font-size: 0.875rem;
+    color: $text-secondary;
+  }
+  
+  &-actions {
+    display: flex;
+    gap: $spacing-2;
+  }
+  
+  &-content {
+    padding: $spacing-4;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  &-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-8;
+    color: $text-secondary;
+    gap: $spacing-3;
+    
+    .spinner {
+      border: 3px solid rgba($text-secondary, 0.2);
+      border-top-color: $text-secondary;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+  }
+  
+  &-error {
+    padding: $spacing-4;
+    background-color: $attack-bg;
+    border-radius: $border-radius;
+    border: 1px solid $attack-color;
+    
+    .error-message {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: $attack-color;
+    }
+  }
+}
+
+/* ---------- Status Bar ---------- */
+.status-bar {
+  margin-bottom: $spacing-6;
+  padding: $spacing-4;
+  background-color: $bg-secondary;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  box-shadow: $shadow;
+  
+  &-content {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-3;
+  }
+  
+  &-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-4;
+  }
+  
+  &-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    color: $text-secondary;
+    font-size: 0.875rem;
+  }
+  
+  &-error {
+    margin-top: $spacing-2;
+    padding: $spacing-3;
+    background-color: $attack-bg;
+    border-radius: $border-radius;
+    border: 1px solid $attack-color;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .error-content {
+      display: flex;
+      align-items: center;
+      gap: $spacing-2;
+      color: $attack-color;
+    }
+  }
+}
+
+/* ---------- Logs Panel ---------- */
+.logs-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-3;
+  }
+  
+  &-filters {
+    display: flex;
+    gap: $spacing-2;
+  }
+  
+  &-content {
+    overflow-y: auto;
+    flex: 1;
+    border-radius: $border-radius;
+    border: 1px solid $border-color;
+    background-color: rgba($bg-tertiary, 0.4);
+  }
+}
+
+.log-entry {
+  padding: $spacing-3;
+  border-bottom: 1px solid rgba($border-color, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+  transition: background-color $transition-fast;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background-color: $bg-tertiary;
+  }
+  
+  &.attack {
+    border-left: 4px solid $attack-color;
+  }
+  
+  &.normal {
+    border-left: 4px solid $normal-color;
+  }
+  
+  &.warning {
+    border-left: 4px solid $warning-color;
+  }
+  
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .log-details {
+    font-size: 0.875rem;
+    color: $text-secondary;
+    
+    strong {
+      color: $text-primary;
+      font-weight: 500;
+    }
+  }
+  
+  .timestamp {
+    font-size: 0.75rem;
+    color: $text-secondary;
+  }
+  
+  .status {
+    padding: $spacing-1 $spacing-2;
+    border-radius: $border-radius-full;
+    font-size: 0.75rem;
+    font-weight: 500;
+    
+    &.attack {
+      background-color: $attack-bg;
+      color: $attack-color;
+    }
+    
+    &.normal {
+      background-color: $normal-bg;
+      color: $normal-color;
+    }
+    
+    &.warning {
+      background-color: $warning-bg;
+      color: $warning-color;
+    }
+  }
+}
+
+/* ---------- Filter Button ---------- */
+.filter-button {
+  padding: $spacing-1 $spacing-2;
+  border-radius: $border-radius-full;
+  font-size: 0.75rem;
+  background-color: $bg-tertiary;
+  color: $text-secondary;
+  border: 1px solid $border-color;
+  transition: all $transition-fast;
+  
+  &:hover {
+    background-color: lighten($bg-tertiary, 5%);
+  }
+  
+  &.active {
+    background-color: $info-bg;
+    color: $info-color;
+    border-color: $info-color;
+  }
+}
+
+/* ---------- Retry Button ---------- */
+.retry-button {
+  padding: $spacing-2 $spacing-3;
+  background-color: rgba($attack-color, 0.2);
+  color: $attack-color;
+  border-radius: $border-radius;
+  font-weight: 500;
+  transition: background-color $transition-fast;
+  
+  &:hover {
+    background-color: rgba($attack-color, 0.3);
+  }
+}
+
+/* ---------- Chart Components ---------- */
+.chart-container {
+  width: 100%;
+  height: 300px;
+  margin-top: $spacing-2;
+}
+
+/* ---------- Animations ---------- */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba($attack-color, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba($attack-color, 0); }
+  100% { box-shadow: 0 0 0 0 rgba($attack-color, 0); }
+}
+
+.spinning {
+  animation: spin 1.5s linear infinite;
+}
+
+/* ---------- Loading Screen ---------- */
+.loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: $bg-primary;
+  z-index: $z-index-max;
+  
+  &-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-6;
+  }
+  
+  .app-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: $spacing-2;
+    position: relative;
+    
+    &:after {
+      content: "IDS";
+      position: absolute;
+      top: -12px;
+      right: -24px;
+      font-size: 0.875rem;
+      background-color: $attack-color;
+      padding: 2px 6px;
+      border-radius: $border-radius-sm;
+      color: white;
+    }
+  }
+  
+  .app-subtitle {
+    font-size: 1.25rem;
+    color: $text-secondary;
+  }
+  
+  .progress-container {
+    width: 300px;
+    height: 6px;
+    background-color: $bg-tertiary;
+    border-radius: $border-radius-full;
+    overflow: hidden;
+    position: relative;
+    
+    .progress-bar {
+      position: absolute;
+      height: 100%;
+      left: 0;
+      top: 0;
+      background: linear-gradient(90deg, $attack-color, $info-color);
+      animation: progress 3s ease-in-out;
+      width: 100%;
+    }
+  }
+  
+  .loading-message {
+    margin-top: $spacing-3;
+    color: $text-secondary;
+    font-size: 0.875rem;
+  }
+}
+
+@keyframes progress {
+  0% { width: 0; }
+  10% { width: 10%; }
+  30% { width: 40%; }
+  50% { width: 60%; }
+  70% { width: 75%; }
+  90% { width: 90%; }
+  100% { width: 100%; }
+}
+
+/* ---------- Responsive Adjustments ---------- */
+@media (max-width: $breakpoint-md) {
+  header {
+    padding: $spacing-3 $spacing-4;
+    
+    h1 {
+      font-size: 1.25rem;
+    }
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: $spacing-4;
+    margin-bottom: $spacing-4;
+  }
+  
+  .card {
+    &-header {
+      padding: $spacing-3;
+    }
+    
+    &-content {
+      padding: $spacing-3;
+    }
+  }
+  
+  .status-bar {
+    margin-bottom: $spacing-4;
+    padding: $spacing-3;
+    
+    &-items {
+      flex-direction: column;
+      gap: $spacing-2;
+    }
+  }
+}
