@@ -1,33 +1,64 @@
-import React from 'react';
-import '../sass/LoadingScreen.scss';
+import React, { useState, useEffect } from 'react';
+import { Shield, AlertTriangle, AlertCircle } from 'lucide-react';
 
 const LoadingScreen = () => {
-    const renderCubeSet = (height) => {
-        return Array.from({ length: 3 }, (_, w) =>
-            Array.from({ length: 3 }, (_, l) => (
-                <div key={`h${height}w${w+1}l${l+1}`} className={`cube h${height} w${w+1} l${l+1}`}>
-                    <div className="face top"></div>
-                    <div className="face left"></div>
-                    <div className="face right"></div>
-                </div>
-            ))
-        ).flat();
-    };
-
+    const [loadingText, setLoadingText] = useState('Initializing security systems');
+    const [dots, setDots] = useState('');
+    
+    // Cycle through loading messages
+    useEffect(() => {
+        const messages = [
+            'Initializing security systems',
+            'Connecting to IDS network',
+            'Loading attack signatures',
+            'Calibrating threat detection',
+            'Scanning for anomalies'
+        ];
+        
+        let messageIndex = 0;
+        
+        const intervalId = setInterval(() => {
+            messageIndex = (messageIndex + 1) % messages.length;
+            setLoadingText(messages[messageIndex]);
+        }, 2000);
+        
+        return () => clearInterval(intervalId);
+    }, []);
+    
+    // Animate loading dots
+    useEffect(() => {
+        const dotsInterval = setInterval(() => {
+            setDots(prev => {
+                if (prev.length >= 3) return '';
+                return prev + '.';
+            });
+        }, 400);
+        
+        return () => clearInterval(dotsInterval);
+    }, []);
+    
     return (
         <div className="loading-screen">
-            <div className="container">
-                <div className="h1Container">
-                    {renderCubeSet(1)}
+            <div className="loading-screen-content">
+                <div>
+                    <h1 className="app-title">OBSERVER</h1>
+                    <p className="app-subtitle">Security Dashboard</p>
                 </div>
-                <div className="h2Container">
-                    {renderCubeSet(2)}
+                
+                <div className="security-icons">
+                    <Shield size={28} className="icon shield" />
+                    <AlertTriangle size={24} className="icon alert" />
+                    <AlertCircle size={20} className="icon circle" />
                 </div>
-                <div className="h3Container">
-                    {renderCubeSet(3)}
+                
+                <div className="progress-container">
+                    <div className="progress-bar"></div>
+                </div>
+                
+                <div className="loading-message">
+                    {loadingText}{dots}
                 </div>
             </div>
-            <h2>Loading Dashboard...</h2>
         </div>
     );
 };
