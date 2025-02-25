@@ -1,7 +1,9 @@
 import { logRequest } from '../utils/logging';
 
-// Use environment variable with fallback
-export const API_URL = import.meta.env.VITE_API_URL || 'http://157.245.249.219:5000';
+// Use relative URLs with the Vite proxy
+// This avoids CORS issues and works in both development and production
+const API_BASE_PATH = '/api';
+export const API_URL = '';
 
 /**
  * Fetch data with retry logic for failed requests
@@ -56,13 +58,15 @@ export const apiClient = {
    * @returns {Promise<Array>} - Array of logs
    */
   async fetchLogs(since = null) {
-    const url = new URL(`${API_URL}/api/logs`);
+    let url = `${API_BASE_PATH}/logs`;
+    
+    // Add query parameters if needed
     if (since) {
-      url.searchParams.append('since', since);
+      url += `?since=${encodeURIComponent(since)}`;
     }
     
     logRequest('apiClient', 'fetchLogs', { since });
-    const data = await fetchWithRetry(url.toString());
+    const data = await fetchWithRetry(url);
     
     if ('error' in data) {
       throw new Error(data.error);
@@ -81,7 +85,7 @@ export const apiClient = {
    */
   async fetchAnomalousIPs() {
     logRequest('apiClient', 'fetchAnomalousIPs');
-    const url = `${API_URL}/api/anomalous-ips`;
+    const url = `${API_BASE_PATH}/anomalous-ips`;
     return fetchWithRetry(url);
   },
   
@@ -91,7 +95,7 @@ export const apiClient = {
    */
   async fetchAttackTimeline() {
     logRequest('apiClient', 'fetchAttackTimeline');
-    const url = `${API_URL}/api/attack-timeline`;
+    const url = `${API_BASE_PATH}/attack-timeline`;
     return fetchWithRetry(url);
   },
   
@@ -101,7 +105,7 @@ export const apiClient = {
    */
   async fetchAttackOrigins() {
     logRequest('apiClient', 'fetchAttackOrigins');
-    const url = `${API_URL}/api/attack-origins`;
+    const url = `${API_BASE_PATH}/attack-origins`;
     return fetchWithRetry(url);
   }
 };
