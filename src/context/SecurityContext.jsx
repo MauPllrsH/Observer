@@ -161,59 +161,29 @@ export function SecurityProvider({ children }) {
     loadAllData();
   }, [loadAllData]);
   
-  // Set up polling
+  // Only load data initially, no polling
   useEffect(() => {
     let mounted = true;
-    let interval = null;
     
-    const startPolling = async () => {
+    const initialLoad = async () => {
       if (!mounted) return;
       
       try {
         await loadAllData();
-        
-        if (mounted) {
-          // Set up interval for regular polling (5 seconds)
-          interval = setInterval(async () => {
-            if (mounted) {
-              try {
-                await fetchLogs();
-                
-                // Refresh other data less frequently (every 30 seconds)
-                const now = Date.now();
-                if (now % 30000 < 5000) {
-                  await Promise.all([
-                    fetchAnomalousIPs(),
-                    fetchAttackTimeline(),
-                    fetchAttackOrigins()
-                  ]);
-                }
-              } catch (error) {
-                logRequest('SecurityContext', 'polling error', { error: error.message });
-              }
-            }
-          }, 5000);
-        }
       } catch (error) {
-        logRequest('SecurityContext', 'initial polling error', { error: error.message });
-        if (mounted) {
-          setTimeout(startPolling, 5000);
-        }
+        logRequest('SecurityContext', 'initial load error', { error: error.message });
       }
     };
     
-    startPolling().catch(error => {
-      logRequest('SecurityContext', 'polling start failed', { error: error.message });
+    initialLoad().catch(error => {
+      logRequest('SecurityContext', 'initial load failed', { error: error.message });
     });
     
     return () => {
       logRequest('SecurityContext', 'cleanup');
       mounted = false;
-      if (interval) {
-        clearInterval(interval);
-      }
     };
-  }, [loadAllData, fetchLogs, fetchAnomalousIPs, fetchAttackTimeline, fetchAttackOrigins]);
+  }, [loadAllData]);
   
   // Context value
   const value = {

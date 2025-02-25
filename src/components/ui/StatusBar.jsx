@@ -9,7 +9,8 @@ const StatusBar = ({
   logsCount, 
   loading, 
   error, 
-  onRetry 
+  onRetry,
+  onRefresh 
 }) => {
   return (
     <div className="status-bar">
@@ -30,6 +31,19 @@ const StatusBar = ({
               <RefreshCw size={16} className="spinning" />
               <span>Refreshing...</span>
             </div>
+          )}
+        </div>
+        
+        <div className="status-actions">
+          {!loading && (
+            <button 
+              onClick={onRefresh}
+              className="refresh-button"
+              aria-label="Refresh data"
+            >
+              <RefreshCw size={16} />
+              <span>Refresh Now</span>
+            </button>
           )}
         </div>
         

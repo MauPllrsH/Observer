@@ -13,7 +13,8 @@ const Dashboard = () => {
         loading, 
         error, 
         lastUpdate, 
-        handleRetry 
+        handleRetry,
+        refreshData
     } = useSecurityContext();
 
     if (loading && !logs.length) {
@@ -36,6 +37,7 @@ const Dashboard = () => {
                 loading={loading}
                 error={error}
                 onRetry={handleRetry}
+                onRefresh={refreshData}
             />
 
             {/* Component Grid - Top Row */}
