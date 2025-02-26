@@ -15,22 +15,27 @@ const StatusBar = ({
   return (
     <div className="status-bar">
       <div className="status-content">
-        <div className="status-info">
-          <Clock size={16} className="status-icon" />
+        <div className="status-item">
+          <Clock size={18} className="status-icon" />
           <span className="status-text">
             Last updated: <span className="status-value">{lastUpdate}</span>
-            <span className="status-separator">•</span>
-            <Database size={14} className="status-inline-icon" /> 
-            <span className="status-value">{logsCount}</span> logs
-            {loading && (
-              <span className="status-loading">
-                <RefreshCw size={14} className="spinning" />
-                Refreshing...
-              </span>
-            )}
           </span>
         </div>
         
+        <div className="status-item">
+          <Database size={18} className="status-icon" /> 
+          <span className="status-text">
+            <span className="status-value">{logsCount}</span> logs
+          </span>
+        </div>
+        
+        {loading && (
+          <div className="status-item">
+            <RefreshCw size={18} className="status-icon spinning" />
+            <span className="status-text">Refreshing...</span>
+          </div>
+        )}
+
         <div className="status-actions">
           {!loading ? (
             <button 
@@ -38,7 +43,7 @@ const StatusBar = ({
               className="refresh-button"
               aria-label="Refresh data"
             >
-              <RefreshCw size={16} />
+              <RefreshCw size={18} />
               <span>Refresh</span>
             </button>
           ) : (
@@ -47,7 +52,7 @@ const StatusBar = ({
               disabled
               aria-label="Refreshing"
             >
-              <RefreshCw size={16} className="spinning" />
+              <RefreshCw size={18} className="spinning" />
               <span>Refreshing</span>
             </button>
           )}

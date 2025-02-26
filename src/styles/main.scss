@@ -262,7 +262,7 @@ main {
 /* ---------- Status Bar ---------- */
 .status-bar {
   margin-bottom: $spacing-4;
-  padding: $spacing-3 $spacing-4;
+  padding: $spacing-4 $spacing-5;
   background-color: $bg-secondary;
   border-radius: $border-radius-lg;
   border: 1px solid rgba($border-color, 0.7);
@@ -287,12 +287,26 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
   }
   
-  &-info {
+  &-item {
     display: flex;
     align-items: center;
-    gap: $spacing-3;
+    gap: $spacing-2;
+    padding: 0 $spacing-4;
+    position: relative;
+    
+    &:not(:last-child):after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 24px;
+      width: 1px;
+      background-color: rgba($border-color, 0.4);
+    }
   }
   
   &-icon {
@@ -300,19 +314,13 @@ main {
     filter: drop-shadow(0 0 5px rgba($primary-brand, 0.4));
   }
   
-  &-inline-icon {
-    color: $secondary-brand;
-    margin: 0 2px 0 8px;
-    position: relative;
-    top: 2px;
-  }
-  
   &-text {
     display: flex;
     align-items: center;
     color: $text-secondary;
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 500;
+    white-space: nowrap;
   }
   
   &-value {
@@ -320,24 +328,6 @@ main {
     font-weight: 600;
     margin: 0 4px;
     font-family: $font-family-mono;
-  }
-  
-  &-separator {
-    margin: 0 10px;
-    color: rgba($text-secondary, 0.5);
-  }
-  
-  &-loading {
-    margin-left: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 3px 8px;
-    background-color: rgba($primary-brand, 0.1);
-    color: $primary-brand;
-    border-radius: $border-radius-full;
-    font-size: 0.75rem;
-    font-weight: 600;
   }
   
   &-actions {
@@ -367,14 +357,14 @@ main {
 
 /* Refresh button */
 .refresh-button {
-  padding: $spacing-2 $spacing-3;
+  padding: $spacing-2 $spacing-4;
   display: flex;
   align-items: center;
   gap: $spacing-2;
   background-color: rgba($primary-brand, 0.15);
   color: $primary-brand;
   border-radius: $border-radius-full;
-  font-size: 0.875rem;
+  font-size: 0.95rem;
   font-weight: 600;
   transition: all $transition-fast;
   border: 1px solid rgba($primary-brand, 0.2);
