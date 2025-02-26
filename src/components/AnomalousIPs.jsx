@@ -92,6 +92,7 @@ const AnomalousIPs = () => {
                                 {ip.matched_rules?.length > 0 && (
                                     <div className="rules-section">
                                         <div className="rules-header">
+                                            <Shield size={14} />
                                             <strong>Matched Rules</strong>
                                         </div>
                                         <div className="tags">
