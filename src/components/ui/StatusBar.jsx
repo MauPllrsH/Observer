@@ -15,23 +15,20 @@ const StatusBar = ({
   return (
     <div className="status-bar">
       <div className="status-content">
-        <div className="status-items">
-          <div className="status-item">
-            <Clock size={16} />
-            <span>Last updated: {lastUpdate}</span>
-          </div>
-          
-          <div className="status-item">
-            <Database size={16} />
-            <span>Logs: {logsCount}</span>
-          </div>
-          
-          {loading && (
-            <div className="status-item">
-              <RefreshCw size={16} className="spinning" />
-              <span>Refreshing...</span>
-            </div>
-          )}
+        <div className="status-info">
+          <Clock size={16} className="status-icon" />
+          <span className="status-text">
+            Last updated: <span className="status-value">{lastUpdate}</span>
+            <span className="status-separator">•</span>
+            <Database size={14} className="status-inline-icon" /> 
+            <span className="status-value">{logsCount}</span> logs
+            {loading && (
+              <span className="status-loading">
+                <RefreshCw size={14} className="spinning" />
+                Refreshing...
+              </span>
+            )}
+          </span>
         </div>
         
         <div className="status-actions">
@@ -42,7 +39,7 @@ const StatusBar = ({
               aria-label="Refresh data"
             >
               <RefreshCw size={16} />
-              <span>Refresh Now</span>
+              <span>Refresh</span>
             </button>
           ) : (
             <button 
@@ -51,7 +48,7 @@ const StatusBar = ({
               aria-label="Refreshing"
             >
               <RefreshCw size={16} className="spinning" />
-              <span>Refreshing...</span>
+              <span>Refreshing</span>
             </button>
           )}
         </div>
