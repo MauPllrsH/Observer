@@ -67,17 +67,19 @@ export function SecurityProvider({ children }) {
   const [attackOrigins, setAttackOrigins] = useState({});
   
   // Fetch logs with timestamp tracking
-  const fetchLogs = useCallback(async () => {
+  const fetchLogs = useCallback(async (forceRefresh = false) => {
     try {
       dispatch({ type: ACTIONS.FETCH_START });
       
-      const data = await apiClient.fetchLogs(lastTimestamp);
+      // When forcing a refresh, don't use the timestamp to get all logs
+      const timestampToUse = forceRefresh ? null : lastTimestamp;
+      const data = await apiClient.fetchLogs(timestampToUse);
       logRequest('SecurityContext', 'received logs', { count: data.length });
       
-      // Update logs and timestamp
-      const updatedLogs = !lastTimestamp ? data : [...logs];
+      // If forcing refresh, just use new data, otherwise merge
+      const updatedLogs = forceRefresh ? data : (!lastTimestamp ? data : [...logs]);
       
-      if (lastTimestamp) {
+      if (!forceRefresh && lastTimestamp) {
         // Merge new logs with existing logs
         data.forEach(log => {
           const index = updatedLogs.findIndex(l => l.timestamp === log.timestamp);
@@ -146,9 +148,9 @@ export function SecurityProvider({ children }) {
   }, []);
   
   // Load all data
-  const loadAllData = useCallback(async () => {
+  const loadAllData = useCallback(async (forceRefresh = true) => {
     await Promise.all([
-      fetchLogs(),
+      fetchLogs(forceRefresh),
       fetchAnomalousIPs(),
       fetchAttackTimeline(),
       fetchAttackOrigins()
@@ -169,7 +171,8 @@ export function SecurityProvider({ children }) {
       if (!mounted) return;
       
       try {
-        await loadAllData();
+        // Initial load should not force refresh, just use what's available
+        await loadAllData(false);
       } catch (error) {
         logRequest('SecurityContext', 'initial load error', { error: error.message });
       }

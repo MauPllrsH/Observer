@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { FileSearch, Terminal, AlertTriangle, Check, Filter } from 'lucide-react';
 import Card from './ui/Card.jsx';
 import { useSecurityContext } from '../context/SecurityContext.jsx';
 
 const LogsPanel = () => {
-    const { logs, loading } = useSecurityContext();
+    const { logs, loading, refreshData } = useSecurityContext();
     const [filter, setFilter] = useState('all'); // 'all', 'attack', 'normal'
 
     // Filter logs based on selection
