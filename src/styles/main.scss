@@ -67,7 +67,7 @@ header {
   background-color: $bg-secondary;
   border-bottom: 1px solid $border-color;
   box-shadow: $shadow;
-  height: 50px;
+  height: 60px;
   display: flex;
   align-items: center;
   
@@ -76,9 +76,14 @@ header {
     display: flex;
     align-items: center;
     gap: $spacing-2;
+    background: linear-gradient(90deg, $primary-brand, $accent-brand);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
     
     .header-icon {
-      color: $attack-color;
+      color: $primary-brand;
+      filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
     }
   }
 }
@@ -96,7 +101,7 @@ main {
 /* ---------- Dashboard ---------- */
 .dashboard {
   max-width: 100%;
-  height: calc(100vh - 58px); // Account for compact header (50px + borders)
+  height: calc(100vh - 90px); // Account for header and status bar
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -105,10 +110,17 @@ main {
     flex: 1;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, minmax(200px, 45vh));
+    grid-template-rows: 300px 300px; // Fixed height rows for consistent sizing
     gap: $spacing-3;
     min-height: 0; // This is important for grid to respect container height
     overflow: auto; // Allow scrolling if needed
+    
+    & > * {
+      height: 300px; // Fixed height for all direct children
+      min-height: 0;
+      max-height: 300px;
+      overflow: hidden;
+    }
   }
   
   &-grid {
@@ -166,7 +178,8 @@ main {
     display: flex;
     flex-direction: column;
     overflow: auto;
-    max-height: 100%; // Important for overflow to work properly
+    max-height: calc(100% - 50px); // Allow for header height
+    height: 100%;
   }
   
   &-loading {
@@ -293,7 +306,7 @@ main {
   display: flex;
   flex-direction: column;
   height: 100%;
-  max-height: 45vh;
+  max-height: 40vh !important;
   overflow: hidden;
   
   &-header {
@@ -302,6 +315,7 @@ main {
     align-items: center;
     margin-bottom: $spacing-2;
     flex-shrink: 0;
+    height: 40px; // Fixed height for header
   }
   
   &-filters {
@@ -316,6 +330,7 @@ main {
     border: 1px solid $border-color;
     background-color: rgba($bg-tertiary, 0.4);
     min-height: 0; // Important for flex child to respect parent's size
+    max-height: calc(100% - 40px); // Remaining height after header
   }
   
   .empty-state {
@@ -500,10 +515,11 @@ main {
 
 /* Attack Timeline */
 .attack-timeline {
-  max-height: 45vh;
+  max-height: 40vh !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 100%;
   
   &-header {
     flex-shrink: 0;
@@ -512,6 +528,8 @@ main {
   &-content {
     flex: 1;
     min-height: 0;
+    overflow: hidden;
+    height: calc(100% - 50px);
   }
 }
 
@@ -557,23 +575,27 @@ main {
     font-weight: 700;
     margin-bottom: $spacing-2;
     position: relative;
+    color: $primary-brand;
+    letter-spacing: 2px;
     
     &:after {
-      content: "IDS";
+      content: "WAF";
       position: absolute;
       top: -12px;
       right: -24px;
       font-size: 0.875rem;
-      background-color: $attack-color;
+      background-color: $accent-brand;
       padding: 2px 6px;
       border-radius: $border-radius-sm;
       color: white;
+      box-shadow: $shadow-md;
     }
   }
   
   .app-subtitle {
     font-size: 1.25rem;
-    color: $text-secondary;
+    color: $secondary-brand;
+    font-weight: 500;
   }
   
   .progress-container {
@@ -583,13 +605,14 @@ main {
     border-radius: $border-radius-full;
     overflow: hidden;
     position: relative;
+    box-shadow: $shadow-inner;
     
     .progress-bar {
       position: absolute;
       height: 100%;
       left: 0;
       top: 0;
-      background: linear-gradient(90deg, $attack-color, $info-color);
+      background: linear-gradient(90deg, $primary-brand, $accent-brand);
       animation: progress 3s ease-in-out;
       width: 100%;
     }
@@ -599,6 +622,7 @@ main {
     margin-top: $spacing-3;
     color: $text-secondary;
     font-size: 0.875rem;
+    font-weight: 500;
   }
 }
 
@@ -610,6 +634,156 @@ main {
   70% { width: 75%; }
   90% { width: 90%; }
   100% { width: 100%; }
+}
+
+/* ---------- Anomalous IPs ---------- */
+.threats-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+  overflow-y: auto;
+  
+  .threat-item {
+    background-color: $bg-tertiary;
+    border-radius: $border-radius;
+    border: 1px solid transparent;
+    padding: $spacing-3;
+    transition: all $transition-normal;
+    
+    &.severe {
+      border-color: $attack-color;
+      box-shadow: 0 0 0 1px rgba($attack-color, 0.2);
+    }
+    
+    &.high {
+      border-color: $warning-color;
+      box-shadow: 0 0 0 1px rgba($warning-color, 0.2);
+    }
+    
+    &.medium {
+      border-color: $info-color;
+      box-shadow: 0 0 0 1px rgba($info-color, 0.2);
+    }
+    
+    &.low {
+      border-color: $normal-color;
+      box-shadow: 0 0 0 1px rgba($normal-color, 0.2);
+    }
+    
+    .threat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: $spacing-3;
+      border-bottom: 1px solid rgba($border-color, 0.3);
+      padding-bottom: $spacing-2;
+      
+      .timestamp {
+        font-size: 0.75rem;
+        color: $text-secondary;
+      }
+      
+      .threat-badge {
+        display: flex;
+        align-items: center;
+        gap: $spacing-1;
+        padding: 2px 6px;
+        border-radius: $border-radius-full;
+        font-size: 0.75rem;
+        font-weight: 600;
+        
+        .severe & {
+          background-color: rgba($attack-color, 0.1);
+          color: $attack-color;
+        }
+        
+        .high & {
+          background-color: rgba($warning-color, 0.1);
+          color: $warning-color;
+        }
+        
+        .medium & {
+          background-color: rgba($info-color, 0.1);
+          color: $info-color;
+        }
+        
+        .low & {
+          background-color: rgba($normal-color, 0.1);
+          color: $normal-color;
+        }
+      }
+    }
+    
+    .threat-details {
+      display: flex;
+      flex-direction: column;
+      gap: $spacing-3;
+    }
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: $spacing-3;
+    }
+    
+    .detail-card {
+      display: flex;
+      align-items: center;
+      gap: $spacing-2;
+      padding: $spacing-2;
+      background-color: rgba($bg-secondary, 0.6);
+      border-radius: $border-radius-sm;
+      
+      .icon {
+        color: $primary-brand;
+      }
+      
+      .detail-info {
+        display: flex;
+        flex-direction: column;
+        
+        label {
+          font-size: 0.7rem;
+          color: $text-secondary;
+          margin-bottom: 2px;
+        }
+        
+        .value {
+          font-weight: 600;
+          font-size: 0.85rem;
+        }
+      }
+    }
+    
+    .rules-section {
+      margin-top: $spacing-2;
+      
+      .rules-header {
+        margin-bottom: $spacing-2;
+        font-size: 0.85rem;
+      }
+      
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: $spacing-1;
+        
+        .tag {
+          background-color: rgba($bg-secondary, 0.6);
+          color: $text-secondary;
+          padding: 2px 8px;
+          border-radius: $border-radius-full;
+          font-size: 0.75rem;
+          transition: all $transition-fast;
+          
+          &:hover {
+            background-color: $primary-brand;
+            color: $text-primary;
+          }
+        }
+      }
+    }
+  }
 }
 
 /* ---------- Responsive Adjustments ---------- */

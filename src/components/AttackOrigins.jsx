@@ -28,7 +28,7 @@ const AttackOrigins = () => {
             if (countryData) {
                 const maxAttacks = Math.max(...data.map(d => d.attack_count));
                 const intensity = countryData.attack_count / maxAttacks;
-                path.style.fill = `rgba(220, 38, 38, ${intensity * 0.8})`;
+                path.style.fill = `rgba(59, 130, 246, ${intensity * 0.8})`;
 
                 // Add hover events
                 path.style.cursor = 'pointer';
@@ -118,34 +118,20 @@ const AttackOrigins = () => {
     }
 
     return (
-        <div style={{
-            backgroundColor: '#2c2d31',
-            padding: '1.5rem',
-            borderRadius: '0.5rem',
-            border: '1px solid #3f3f46',
+        <div className="card" style={{
             height: '400px'
         }}>
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1rem'
-            }}>
-                <h2 style={{
-                    color: '#e1e1e3',
-                    fontSize: '1.5rem',
-                    margin: 0
-                }}>Global Attack Map</h2>
-                <span style={{ color: '#a1a1a3', fontSize: '0.875rem' }}>
-                    {attackData.length} Active Threats
-                </span>
+            <div className="card-header">
+                <div className="card-title">
+                    <h2>Global Attack Map</h2>
+                    <div className="card-stats">
+                        <span>{attackData.length} Active Threats</span>
+                    </div>
+                </div>
             </div>
 
-            <div style={{
-                position: 'relative',
-                height: 'calc(100% - 3rem)',
-                backgroundColor: '#1a1b1e',
-                borderRadius: '0.5rem'
+            <div className="card-content" style={{
+                position: 'relative'
             }}>
                 <WorldMap
                     ref={svgRef}

@@ -14,7 +14,7 @@ const Card = ({
   stats = null,
 }) => {
   return (
-    <div className={`card ${className}`}>
+    <div className={`card ${className}`} style={{ maxHeight: '40vh' }}>
       <div className="card-header">
         <div className="card-title">
           <h2>{title}</h2>

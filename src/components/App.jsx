@@ -41,7 +41,7 @@ function App() {
                     <header>
                         <h1>
                             <Shield size={20} className="header-icon" />
-                            IDS Security Dashboard
+                            SnoopyWAF Security Dashboard
                         </h1>
                     </header>
                     <main>

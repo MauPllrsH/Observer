@@ -53,34 +53,47 @@ const AnomalousIPs = () => {
                                 <span className="timestamp">
                                     {new Date(ip.last_detected).toLocaleString()}
                                 </span>
-                                <span className="threat-level">
+                                <div className="threat-badge">
                                     <AlertTriangle size={14} />
-                                    Risk Level: {ip.threat_level.toFixed(1)}%
-                                </span>
+                                    Risk: {ip.threat_level.toFixed(1)}%
+                                </div>
                             </div>
                             <div className="threat-details">
-                                <div className="detail-row">
-                                    <div className="detail">
-                                        <Globe size={14} className="icon" />
-                                        <strong>IP Address:</strong> {ip.ip}
+                                <div className="detail-grid">
+                                    <div className="detail-card">
+                                        <Globe size={16} className="icon" />
+                                        <div className="detail-info">
+                                            <label>IP Address</label>
+                                            <span className="value">{ip.ip}</span>
+                                        </div>
                                     </div>
-                                    <div className="detail">
-                                        <Monitor size={14} className="icon" />
-                                        <strong>Total Requests:</strong> {ip.total_requests}
+                                    <div className="detail-card">
+                                        <Monitor size={16} className="icon" />
+                                        <div className="detail-info">
+                                            <label>Total Requests</label>
+                                            <span className="value">{ip.total_requests}</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="detail-row">
-                                    <div className="detail">
-                                        <Activity size={14} className="icon" />
-                                        <strong>Anomalous Requests:</strong> {ip.anomalous_requests}
+                                    <div className="detail-card">
+                                        <Activity size={16} className="icon" />
+                                        <div className="detail-info">
+                                            <label>Anomalous Requests</label>
+                                            <span className="value">{ip.anomalous_requests}</span>
+                                        </div>
                                     </div>
-                                    <div className="detail">
-                                        <strong>Attack Rate:</strong> {((ip.anomalous_requests / ip.total_requests) * 100).toFixed(1)}%
+                                    <div className="detail-card">
+                                        <Shield size={16} className="icon" />
+                                        <div className="detail-info">
+                                            <label>Attack Rate</label>
+                                            <span className="value">{((ip.anomalous_requests / ip.total_requests) * 100).toFixed(1)}%</span>
+                                        </div>
                                     </div>
                                 </div>
                                 {ip.matched_rules?.length > 0 && (
-                                    <div className="detail-full">
-                                        <strong>Matched Rules:</strong>
+                                    <div className="rules-section">
+                                        <div className="rules-header">
+                                            <strong>Matched Rules</strong>
+                                        </div>
                                         <div className="tags">
                                             {ip.matched_rules.map((rule, idx) => (
                                                 <span key={idx} className="tag">{rule}</span>

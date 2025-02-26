@@ -9,7 +9,7 @@ const LoadingScreen = () => {
     useEffect(() => {
         const messages = [
             'Initializing security systems',
-            'Connecting to IDS network',
+            'Connecting to WAF network',
             'Loading attack signatures',
             'Calibrating threat detection',
             'Scanning for anomalies'
@@ -41,7 +41,7 @@ const LoadingScreen = () => {
         <div className="loading-screen">
             <div className="loading-screen-content">
                 <div>
-                    <h1 className="app-title">OBSERVER</h1>
+                    <h1 className="app-title">SNOOPYWAF</h1>
                     <p className="app-subtitle">Security Dashboard</p>
                 </div>
                 
