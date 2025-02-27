@@ -966,6 +966,44 @@ main {
   }
 }
 
+/* ---------- Chart Tooltips ---------- */
+.tooltip-container {
+  background-color: rgba($bg-secondary, 0.9);
+  border: 1px solid rgba($border-color, 0.7);
+  border-radius: $border-radius-sm;
+  padding: $spacing-3;
+  box-shadow: $shadow-md;
+  backdrop-filter: blur(4px);
+  
+  .tooltip-time {
+    font-size: 0.9rem;
+    color: $text-primary;
+    margin-bottom: $spacing-2;
+    font-weight: 600;
+  }
+  
+  .tooltip-value {
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: $spacing-1;
+    
+    &.tooltip-attacks {
+      color: $attack-color;
+    }
+    
+    &.tooltip-requests {
+      color: $primary-brand;
+    }
+  }
+  
+  .tooltip-label {
+    font-weight: 500;
+    margin-right: $spacing-2;
+    color: $text-secondary;
+  }
+}
+
 /* ---------- Responsive Adjustments ---------- */
 @media (max-width: $breakpoint-md) {
   header {

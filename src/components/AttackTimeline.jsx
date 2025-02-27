@@ -5,11 +5,15 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-gray-800 border border-gray-700 p-3 rounded-lg shadow-lg">
-                <p className="text-gray-200">Time: {label}</p>
-                <p className="text-red-400">Attacks: {payload[0].value}</p>
+            <div className="tooltip-container">
+                <p className="tooltip-time">{label}</p>
+                <p className="tooltip-value tooltip-attacks">
+                  <span className="tooltip-label">Attacks:</span> {payload[0].value}
+                </p>
                 {payload[0].payload.total_requests && (
-                    <p className="text-blue-400">Total Requests: {payload[0].payload.total_requests}</p>
+                    <p className="tooltip-value tooltip-requests">
+                      <span className="tooltip-label">Total Requests:</span> {payload[0].payload.total_requests}
+                    </p>
                 )}
             </div>
         );
@@ -40,14 +44,42 @@ export default function AttackTimeline() {
                 logRequest('AttackTimeline', 'received data', { count: data.length });
 
                 if (mounted) {
-                    const processedData = data.map(entry => ({
-                        ...entry,
-                        formattedTime: new Date(entry.timestamp).toLocaleTimeString('en-US', {
-                            hour: 'numeric',
-                            minute: 'numeric',
-                            hour12: true
-                        })
-                    }));
+                    // Debug timestamps and ensure they're valid
+                    console.log('First timestamp example:', data[0]?.timestamp);
+                    
+                    const processedData = data.map(entry => {
+                        // Parse timestamp properly, making sure it's valid
+                        let date;
+                        try {
+                            // Check if timestamp is Unix timestamp (number) or string
+                            if (typeof entry.timestamp === 'number') {
+                                date = new Date(entry.timestamp * 1000); // Convert seconds to milliseconds
+                            } else {
+                                date = new Date(entry.timestamp);
+                            }
+                            
+                            // Validate date - if invalid, create a fallback
+                            if (isNaN(date.getTime())) {
+                                console.warn('Invalid timestamp detected:', entry.timestamp);
+                                date = new Date(); // Fallback to current time
+                            }
+                        } catch (err) {
+                            console.error('Error parsing timestamp:', err);
+                            date = new Date(); // Fallback to current time
+                        }
+                        
+                        return {
+                            ...entry,
+                            // Include full date and time in formatted string
+                            formattedTime: date.toLocaleString('en-US', {
+                                month: 'short',
+                                day: 'numeric',
+                                hour: 'numeric',
+                                minute: 'numeric',
+                                hour12: true
+                            })
+                        };
+                    });
 
                     setTimelineData(processedData);
                     setLastFetch(new Date().toISOString());
@@ -114,32 +146,37 @@ export default function AttackTimeline() {
                     >
                         <defs>
                             <linearGradient id="attackGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                                <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(71, 85, 105, 0.3)" />
                         <XAxis
                             dataKey="formattedTime"
-                            stroke="#9ca3af"
-                            tick={{ fill: '#9ca3af' }}
+                            stroke="#94a3b8"
+                            tick={{ fill: '#94a3b8', fontSize: 10 }}
                             tickFormatter={(value) => value}
-                            interval={Math.ceil(timelineData.length / 5)}
-                            angle={-45}
+                            interval={Math.ceil(timelineData.length / 6)}
+                            angle={-35}
                             textAnchor="end"
-                            height={60}
+                            height={65}
+                            axisLine={{ stroke: 'rgba(71, 85, 105, 0.5)' }}
+                            tickLine={{ stroke: 'rgba(71, 85, 105, 0.5)' }}
                         />
                         <YAxis
-                            stroke="#9ca3af"
-                            tick={{ fill: '#9ca3af' }}
+                            stroke="#94a3b8"
+                            tick={{ fill: '#94a3b8' }}
+                            axisLine={{ stroke: 'rgba(71, 85, 105, 0.5)' }}
+                            tickLine={{ stroke: 'rgba(71, 85, 105, 0.5)' }}
                         />
                         <Tooltip content={<CustomTooltip />} />
                         <Area
                             type="monotone"
                             dataKey="attacks"
-                            stroke="#ef4444"
+                            stroke="#3b82f6"
                             fill="url(#attackGradient)"
                             strokeWidth={2}
+                            activeDot={{ r: 6, fill: '#3b82f6', stroke: '#fff', strokeWidth: 2 }}
                         />
                     </AreaChart>
                 </ResponsiveContainer>
