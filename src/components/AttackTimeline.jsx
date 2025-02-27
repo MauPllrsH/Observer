@@ -34,7 +34,7 @@ export default function AttackTimeline() {
         const fetchData = async () => {
             try {
                 logRequest('AttackTimeline', 'fetching data', { lastFetch });
-                const response = await fetch('http://157.245.249.219:5000/api/attack-timeline');
+                const response = await fetch('/api/attack-timeline');
 
                 if (!response.ok) {
                     throw new Error('Failed to fetch timeline data');
@@ -44,18 +44,10 @@ export default function AttackTimeline() {
                 logRequest('AttackTimeline', 'received data', { count: data.length });
 
                 if (mounted) {
-                    // Debug timestamps and ensure they're valid
-                    console.log('First timestamp example:', data[0]?.timestamp);
+                    console.log('Timeline data received:', data);
                     
                     // Ensure we have valid data
                     const validData = data.filter(entry => entry && entry.timestamp && entry.attacks !== undefined);
-                    console.log('Filtered valid data items:', validData.length);
-                    
-                    // Check for -Infinity values and debug
-                    const hasNegInfinity = validData.some(entry => entry.attacks === -Infinity);
-                    if (hasNegInfinity) {
-                        console.warn('Detected -Infinity values in data, fixing...');
-                    }
                     
                     const processedData = validData.map(entry => {
                         // Fix any -Infinity values
@@ -64,16 +56,11 @@ export default function AttackTimeline() {
                         // Parse timestamp properly, making sure it's valid
                         let date;
                         try {
-                            // Check if timestamp is Unix timestamp (number) or string
-                            if (typeof entry.timestamp === 'number') {
-                                date = new Date(entry.timestamp * 1000); // Convert seconds to milliseconds
-                            } else {
-                                // Handle ISO strings or other formats
-                                date = new Date(entry.timestamp);
-                            }
+                            // The timestamp should be in format "YYYY-MM-DD HH:00" from the backend
+                            date = new Date(entry.timestamp);
                             
-                            // Extra validation - if date is invalid or wildly off (like year 0), use now
-                            if (isNaN(date.getTime()) || date.getFullYear() < 2000) {
+                            // Extra validation
+                            if (isNaN(date.getTime())) {
                                 console.warn('Invalid timestamp detected, using current time:', entry.timestamp);
                                 date = new Date(); // Fallback to current time
                             }
@@ -82,14 +69,12 @@ export default function AttackTimeline() {
                             date = new Date(); // Fallback to current time
                         }
                         
-                        // Use UTC methods to avoid timezone issues
+                        // Format the timestamp for display
                         const formattedTime = new Intl.DateTimeFormat('en-US', {
                             month: 'short',
                             day: 'numeric',
                             hour: 'numeric',
-                            minute: 'numeric',
-                            hour12: true,
-                            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone // Use local timezone explicitly
+                            hour12: true
                         }).format(date);
                         
                         return {
@@ -190,8 +175,7 @@ export default function AttackTimeline() {
                             dataKey="formattedTime"
                             stroke="#94a3b8"
                             tick={{ fill: '#94a3b8', fontSize: 10 }}
-                            tickFormatter={(value) => value}
-                            interval={Math.ceil(timelineData.length / 6)}
+                            interval="preserveStartEnd"
                             angle={-35}
                             textAnchor="end"
                             height={65}
