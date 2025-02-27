@@ -47,7 +47,20 @@ export default function AttackTimeline() {
                     // Debug timestamps and ensure they're valid
                     console.log('First timestamp example:', data[0]?.timestamp);
                     
-                    const processedData = data.map(entry => {
+                    // Ensure we have valid data
+                    const validData = data.filter(entry => entry && entry.timestamp && entry.attacks !== undefined);
+                    console.log('Filtered valid data items:', validData.length);
+                    
+                    // Check for -Infinity values and debug
+                    const hasNegInfinity = validData.some(entry => entry.attacks === -Infinity);
+                    if (hasNegInfinity) {
+                        console.warn('Detected -Infinity values in data, fixing...');
+                    }
+                    
+                    const processedData = validData.map(entry => {
+                        // Fix any -Infinity values
+                        const attacks = entry.attacks === -Infinity ? 0 : entry.attacks;
+                        
                         // Parse timestamp properly, making sure it's valid
                         let date;
                         try {
@@ -55,12 +68,13 @@ export default function AttackTimeline() {
                             if (typeof entry.timestamp === 'number') {
                                 date = new Date(entry.timestamp * 1000); // Convert seconds to milliseconds
                             } else {
+                                // Handle ISO strings or other formats
                                 date = new Date(entry.timestamp);
                             }
                             
-                            // Validate date - if invalid, create a fallback
-                            if (isNaN(date.getTime())) {
-                                console.warn('Invalid timestamp detected:', entry.timestamp);
+                            // Extra validation - if date is invalid or wildly off (like year 0), use now
+                            if (isNaN(date.getTime()) || date.getFullYear() < 2000) {
+                                console.warn('Invalid timestamp detected, using current time:', entry.timestamp);
                                 date = new Date(); // Fallback to current time
                             }
                         } catch (err) {
@@ -68,16 +82,20 @@ export default function AttackTimeline() {
                             date = new Date(); // Fallback to current time
                         }
                         
+                        // Use UTC methods to avoid timezone issues
+                        const formattedTime = new Intl.DateTimeFormat('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true,
+                            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone // Use local timezone explicitly
+                        }).format(date);
+                        
                         return {
                             ...entry,
-                            // Include full date and time in formatted string
-                            formattedTime: date.toLocaleString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: 'numeric',
-                                minute: 'numeric',
-                                hour12: true
-                            })
+                            attacks, // Use fixed attacks value
+                            formattedTime
                         };
                     });
 
@@ -109,18 +127,34 @@ export default function AttackTimeline() {
         };
     }, []);
 
+    // Validate that we have good data to display
+    const hasValidData = timelineData && timelineData.length > 0 && 
+                         timelineData.every(item => 
+                           typeof item.attacks === 'number' && 
+                           !isNaN(item.attacks) && 
+                           isFinite(item.attacks));
+    
     if (loading) {
         return (
-            <div className="bg-gray-800 p-6 rounded-lg">
-                <div className="animate-pulse text-gray-400">Loading timeline data...</div>
+            <div className="card">
+                <div className="card-loading">
+                    <div className="spinner"></div>
+                    <span>Loading timeline data...</span>
+                </div>
             </div>
         );
     }
 
-    if (error) {
+    if (error || !hasValidData) {
         return (
-            <div className="bg-gray-800 p-6 rounded-lg">
-                <div className="text-red-500">Error: {error}</div>
+            <div className="card">
+                <div className="card-error">
+                    <div className="error-message">
+                        <span>
+                            {error || "Invalid data received. Please try refreshing."}
+                        </span>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -143,6 +177,7 @@ export default function AttackTimeline() {
                     <AreaChart
                         data={timelineData}
                         margin={{ top: 5, right: 10, left: 0, bottom: 30 }}
+                        isAnimationActive={false} // Disable animation for better stability
                     >
                         <defs>
                             <linearGradient id="attackGradient" x1="0" y1="0" x2="0" y2="1">
@@ -168,6 +203,8 @@ export default function AttackTimeline() {
                             tick={{ fill: '#94a3b8' }}
                             axisLine={{ stroke: 'rgba(71, 85, 105, 0.5)' }}
                             tickLine={{ stroke: 'rgba(71, 85, 105, 0.5)' }}
+                            allowDecimals={false}
+                            domain={[0, 'auto']} // Ensure y-axis starts at 0 and prevents negative values
                         />
                         <Tooltip content={<CustomTooltip />} />
                         <Area
