@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { logRequest } from '../utils/logging';
 
+// Import icons if you're using lucide-react or another icon library
+// If not, you can remove these imports and the icon elements
+import { ShieldAlert, ShieldCheck, AlertTriangle } from 'lucide-react';
+
 const API_URL = 'http://157.245.249.219:5000';
 
 const PreventionModeToggle = () => {
@@ -10,6 +14,9 @@ const PreventionModeToggle = () => {
 
     useEffect(() => {
         fetchPreventionMode();
+        // Poll for updates every 30 seconds
+        const interval = setInterval(fetchPreventionMode, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const fetchPreventionMode = async () => {
@@ -47,7 +54,7 @@ const PreventionModeToggle = () => {
             setIsEnabled(data.enabled);
             setError(null);
         } catch (err) {
-            logRequest('PreventionMode', 'toggle error', { error: err.message });
+            logRequest('PreventionMode', 'error', { error: err.message });
             setError('Failed to update prevention mode');
         } finally {
             setIsLoading(false);
@@ -55,43 +62,54 @@ const PreventionModeToggle = () => {
     };
 
     return (
-        <div className="flex items-center gap-4">
-            <div className="flex items-center">
+        <div className="prevention-toggle">
+            <div className="prevention-toggle-header">
+                <div className="toggle-title">
+                    {isEnabled ? (
+                        <ShieldAlert size={20} className="prevention-icon" />
+                    ) : (
+                        <ShieldCheck size={20} className="detection-icon" />
+                    )}
+                    <h3>WAF Mode</h3>
+                </div>
+                <div className={`status ${isEnabled ? 'attack' : 'normal'}`}>
+                    {isEnabled ? 'Prevention' : 'Detection'}
+                </div>
+            </div>
+
+            <div className="prevention-toggle-content">
+                <p className="mode-description">
+                    {isEnabled
+                        ? 'Prevention mode is ACTIVE. Detected threats will be BLOCKED automatically.'
+                        : 'Detection mode is ACTIVE. Threats will be logged but NOT blocked.'}
+                </p>
+
                 <button
                     onClick={togglePreventionMode}
                     disabled={isLoading}
-                    className={`
-                        relative inline-flex h-6 w-11 items-center rounded-full
-                        transition-colors duration-200 ease-in-out
-                        ${isEnabled ? 'bg-red-600' : 'bg-gray-600'}
-                        ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                    `}
+                    className={`toggle-button ${isEnabled ? 'prevention-active' : 'detection-active'}`}
                 >
-                    <span
-                        className={`
-                            inline-block h-4 w-4 transform rounded-full bg-white
-                            transition duration-200 ease-in-out
-                            ${isEnabled ? 'translate-x-6' : 'translate-x-1'}
-                        `}
-                    />
+                    {isLoading ? (
+                        <>
+                            <span className="spinner"></span>
+                            <span>Updating...</span>
+                        </>
+                    ) : (
+                        <>
+                            {isEnabled ? 'Switch to Detection Mode' : 'Switch to Prevention Mode'}
+                        </>
+                    )}
                 </button>
-                <span className="ml-2 text-[#e1e1e3]">
-                    Prevention Mode: {isEnabled ? 'Active' : 'Inactive'}
-                </span>
+
+                {error && (
+                    <div className="error-message">
+                        <AlertTriangle size={16} />
+                        <span>{error}</span>
+                    </div>
+                )}
             </div>
-            {error && (
-                <span className="text-red-400 text-sm">
-                    {error}
-                </span>
-            )}
-            {isLoading && (
-                <span className="text-[#a1a1a3] text-sm animate-pulse">
-                    Updating...
-                </span>
-            )}
         </div>
     );
 };
-
 
 export default PreventionModeToggle;

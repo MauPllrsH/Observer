@@ -14,6 +14,7 @@
   --cube-left: #D53A33;
   --cube-right: #E79C10;
   --cube-top: #1d9099;
+  --border-radius: 0.625rem;
 }
 
 * {
@@ -151,6 +152,120 @@ code, pre {
   margin-top: 1rem;
 }
 
+/* Prevention mode toggle styles */
+.prevention-toggle {
+  background-color: var(--bg-secondary);
+  border-radius: 0.875rem;
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  box-shadow: 0 6px 12px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.1);
+  color: var(--text-primary);
+  position: relative;
+}
 
+.prevention-toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
+.prevention-toggle-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.prevention-toggle-content {
+  margin-top: 1rem;
+}
+
+.mode-description {
+  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.toggle-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 0.625rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  border: 1px solid transparent;
+}
+
+.toggle-button.prevention-active {
+  background-color: var(--normal-bg);
+  color: var(--normal-color);
+  border-color: var(--normal-color);
+}
+
+.toggle-button.detection-active {
+  background-color: var(--attack-bg);
+  color: var(--attack-color);
+  border-color: var(--attack-color);
+}
+
+.toggle-button:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.toggle-button:active {
+  transform: translateY(0);
+}
+
+.toggle-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.toggle-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.prevention-icon {
+  color: var(--attack-color);
+}
+
+.detection-icon {
+  color: var(--normal-color);
+}
+
+.spinner {
+  display: inline-block;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: var(--attack-bg);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--attack-color);
+  color: var(--attack-color);
+  font-size: 0.875rem;
+}
 

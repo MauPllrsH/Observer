@@ -5,14 +5,15 @@ import LogsPanel from "./LogsPanel.jsx";
 import ErrorBoundary from "./ErrorBoundary.jsx";
 import AttackOrigins from "./AttackOrigins.jsx";
 import StatusBar from './ui/StatusBar.jsx';
+import PreventionModeToggle from './PreventionModeToggle.jsx';
 import { useSecurityContext } from '../context/SecurityContext.jsx';
 
 const Dashboard = () => {
-    const { 
-        logs, 
-        loading, 
-        error, 
-        lastUpdate, 
+    const {
+        logs,
+        loading,
+        error,
+        lastUpdate,
         handleRetry,
         refreshData
     } = useSecurityContext();
@@ -39,6 +40,11 @@ const Dashboard = () => {
                 onRetry={handleRetry}
                 onRefresh={refreshData}
             />
+
+            {/* Prevention Mode Toggle */}
+            <div className="prevention-toggle-wrapper">
+                <PreventionModeToggle />
+            </div>
 
             {/* Compact Grid Layout */}
             <div className="dashboard-content">
